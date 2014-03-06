@@ -1,5 +1,7 @@
 == Yubikey for LUKS ==
 
+This package is inspired and based on https://github.com/tfheen/ykfde.
+
 This enables you to use the yubikey as 2FA for LUKS.
 The Password you enter is used as challenge for the yubikey
 
@@ -15,7 +17,13 @@ Initialize the Yubikey for challenge response in slot 2
 
 = install package =
 
-Install the package.
+Build the package:
+
+	dpkg-buildpackage
+
+Install the package:
+
+    dpkg -i ../yubikey-luks_0.1-1_all.deb
 
 = Assign a Yubikey to an LUKS slot =
 

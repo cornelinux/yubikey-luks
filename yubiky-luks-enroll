@@ -1,14 +1,22 @@
 #!/bin/sh
 SLOT=7
+DISK="/dev/sda5"
+TMP_FILE=/tmp/new_key
 set -e
 
 echo "Killing LUKS slot $SLOT"
-cryptsetup luksKillSlot /dev/sda5 $SLOT
+cryptsetup luksKillSlot $DISK $SLOT
 echo "Adding yubikey to initrd"
 P1=$(/lib/cryptsetup/askpass "Please insert a yubikey and enter a new password:")
 P2=$(/lib/cryptsetup/askpass "again:")
+if [ "$P1" != "$P2" ]; then
+	echo "Passwords do not match"
+	exit 1
+fi
 R="$(ykchalresp -2 "$P1" 2>/dev/null || true)"
-echo -n "$R" > /dev/shm/new_key
-cryptsetup --key-slot=$SLOT luksAddKey /dev/sda5 /dev/shm/new_key
-#rm /dev/shm/new_key
+touch $TMP_FILE
+chmod 600 $TMP_FILE
+echo -n "$R" > $TMP_FILE
+cryptsetup --key-slot=$SLOT luksAddKey $DISK $TMP_FILE
+rm $TMP_FILE
 exit 0
