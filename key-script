@@ -1,0 +1,48 @@
+#! /bin/sh
+#
+# This is /sbin/ykluks-keyscript, which gets called when unlocking the disk
+#
+set -e
+
+message()
+{
+    if [ -x /bin/plymouth ] && plymouth --ping; then
+        plymouth message --text="$@"
+    else
+        echo "$@" >&2
+    fi
+    return 0
+}
+
+check_yubikey_present() {
+    ykchalresp -2 AreYouThere > /dev/null 2>%1
+    return $?
+}
+
+udevadm settle || true
+
+# source for log_*_msg() functions, see LP: #272301
+. /scripts/functions
+
+if [ -z "$cryptkeyscript" ]; then
+	cryptkey="Unlocking the disk $cryptsource ($crypttarget)\nEnter passphrase: "
+	if [ -x /bin/plymouth ] && plymouth --ping; then
+    	cryptkeyscript="plymouth ask-for-password --prompt"
+	    cryptkey=$(printf "$cryptkey")
+    else
+        cryptkeyscript="/lib/cryptsetup/askpass"
+    fi
+fi
+
+PW="$($cryptkeyscript "Please insert yubikey and press enter or enter a valid passphrase")"
+	
+if [ check_yubikey_present ]; then
+	message "Accessing yubikey..."
+    R="$(ykchalresp -2 "$PW" 2>/dev/null || true)"
+	message "Retrieved the response from the Yubikey"
+	echo -n "$R"
+else
+	echo -n "$PW"
+fi
+
+exit 0

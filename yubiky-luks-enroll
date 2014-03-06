@@ -1,0 +1,14 @@
+#!/bin/sh
+SLOT=7
+set -e
+
+echo "Killing LUKS slot $SLOT"
+cryptsetup luksKillSlot /dev/sda5 $SLOT
+echo "Adding yubikey to initrd"
+P1=$(/lib/cryptsetup/askpass "Please insert a yubikey and enter a new password:")
+P2=$(/lib/cryptsetup/askpass "again:")
+R="$(ykchalresp -2 "$P1" 2>/dev/null || true)"
+echo -n "$R" > /dev/shm/new_key
+cryptsetup --key-slot=$SLOT luksAddKey /dev/sda5 /dev/shm/new_key
+#rm /dev/shm/new_key
+exit 0

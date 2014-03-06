@@ -1,0 +1,14 @@
+Source: yubikey-luks
+Section: admin
+Priority: extra
+Maintainer: Cornelius Kölbel <corny@cornelinux.de>
+Build-Depends: debhelper (>= 7.0.50)
+Standards-Version: 3.8.3
+
+Package: yubikey-luks
+Architecture: all
+Depends: initramfs-tools, yubikey-personalization (>= 1.5)
+Description: Yubikey two factor authentication with LUKS
+ Using the Yubikey in challenge response mode to
+ do two factor authentication with LUKS.
+ Requires Yubikey 2.2 or newer. 
