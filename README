@@ -1,4 +1,5 @@
-== Yubikey for LUKS ==
+Yubikey for LUKS
+================
 
 This package is inspired and based on https://github.com/tfheen/ykfde.
 
@@ -9,13 +10,15 @@ The keyscript allows to boot the machine with either
 the password and the Yubikey or with a normal password
 from any key slot.
 
-= initialize Yubikey =
+initialize Yubikey
+------------------
 
 Initialize the Yubikey for challenge response in slot 2
 
 	ykpersonalize -2 -ochal-resp -ochal-hmac -ohmac-lt64 -oserial-api-visible
 
-= install package =
+install package
+---------------
 
 Build the package:
 
@@ -25,7 +28,8 @@ Install the package:
 
     dpkg -i ../yubikey-luks_0.1-1_all.deb
 
-= Assign a Yubikey to an LUKS slot =
+Assign a Yubikey to an LUKS slot
+--------------------------------
 
 You can now assign the Yubikey to a slot.
 Technically this is done by writing the response to your password (1st factor
