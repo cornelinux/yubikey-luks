@@ -36,7 +36,7 @@ fi
 
 PW="$($cryptkeyscript "Please insert yubikey and press enter or enter a valid passphrase")"
 	
-if [ check_yubikey_present ]; then
+if check_yubikey_present; then
 	message "Accessing yubikey..."
     R="$(ykchalresp -2 "$PW" 2>/dev/null || true)"
 	message "Retrieved the response from the Yubikey"

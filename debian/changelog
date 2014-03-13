@@ -1,3 +1,9 @@
+yubikey-luks (0.2-1) unstable; urgency=low
+
+  * Fixed if-error that avoided the usage of plain password
+
+ -- Cornelius Kölbel <corny@cornelinux.de>  Thu, 13 Mar 2014 22:40:00 +0100
+
 yubikey-luks (0.1-1) unstable; urgency=low
 
   * Initial release.
