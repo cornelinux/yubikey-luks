@@ -1,3 +1,9 @@
+yubikey-luks (0.3~dev0-1) trusty; uegency=low
+
+  * added debian build and upload to ppa
+
+ -- Cornelius Kölbel <cornelius.koelbel@netknights.it>  Wed, 16 Jul 2014 17:54:00 +0200
+
 yubikey-luks (0.2-1) unstable; urgency=low
 
   * Fixed if-error that avoided the usage of plain password
