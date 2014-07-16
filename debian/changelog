@@ -1,4 +1,4 @@
-yubikey-luks (0.3~dev0-1) trusty; uegency=low
+yubikey-luks (0.3-1) trusty; uegency=low
 
   * added debian build and upload to ppa
 
