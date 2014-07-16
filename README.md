@@ -22,16 +22,21 @@ install package
 
 Build the package:
 
-	dpkg-buildpackage
+	make builddeb
 
 Install the package:
 
-    dpkg -i ../yubikey-luks_0.1-1_all.deb
+	dpkg -i DEBUILD/yubikey-luks_0.?-1_all.deb
 
 Assign a Yubikey to an LUKS slot
 --------------------------------
 
-You can now assign the Yubikey to a slot.
+You can now assign the Yubikey to a slot using the tool
+
+	yubikey-luks-enroll
+
+Note: The partition is hardcoded in yubikey-luks-enroll. You might need to change this!
+
 Technically this is done by writing the response to your password (1st factor
 knowlege) created by the Yubikey (2nd factor possession) to a key slot.
 
