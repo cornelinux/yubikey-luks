@@ -40,3 +40,15 @@ this:
 	bd438575f4e8df965c80363f8aa6fe1debbe9ea9
 it can be used as normal password.
 
+Manage several Yubikeys and Machines
+------------------------------------
+
+It is possible to manage several Yubikeys and machines.
+You need to use privacyIDEA to maange the Yubikeys and
+the privacyIDEA admin client to push the Yubikey responses
+to the LUKS slots.
+
+See https://github.com/privacyidea/privacyideaadm and
+https://github.com/privacyidea/privacyidea
+
+
