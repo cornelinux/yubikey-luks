@@ -1,8 +1,34 @@
 #!/bin/sh
 SLOT=7
-DISK="/dev/sda5"
+DISK="/dev/sda3"
 TMP_FILE=/tmp/new_key
 set -e
+
+
+
+while getopts ":s:d:h" opt; do
+  case $opt in
+	s)
+		SLOT=$OPTARG
+		echo "setting slot to $OPTARG."
+		;;
+	d)
+		DISK=$OPTARG
+		echo "setting disk to $OPTARG."
+		;;
+	h)
+		echo 
+		echo " -d : set the partition"
+		echo " -s : set the slot"
+		echo
+		exit 1
+		;;
+	\?)
+		echo "Invalid option: -$OPTARG" >&2
+		;;
+  esac
+done
+
 
 echo "Killing LUKS slot $SLOT"
 cryptsetup luksKillSlot $DISK $SLOT
