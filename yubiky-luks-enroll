@@ -1,12 +1,13 @@
 #!/bin/sh
 SLOT=7
 DISK="/dev/sda3"
+CLEAR_SLOT=0
 TMP_FILE=/tmp/new_key
 set -e
 
 
 
-while getopts ":s:d:h" opt; do
+while getopts ":s:d:hc" opt; do
   case $opt in
 	s)
 		SLOT=$OPTARG
@@ -16,10 +17,14 @@ while getopts ":s:d:h" opt; do
 		DISK=$OPTARG
 		echo "setting disk to $OPTARG."
 		;;
+	c)      CLEAR_SLOT=1
+		echo "clearing slot"
+		;;
 	h)
 		echo 
-		echo " -d : set the partition"
-		echo " -s : set the slot"
+		echo " -d <partition>: set the partition"
+		echo " -s <slot>     : set the slot"
+                echo " -c            : clear the slot prior to writing"
 		echo
 		exit 1
 		;;
@@ -29,9 +34,10 @@ while getopts ":s:d:h" opt; do
   esac
 done
 
-
-echo "Killing LUKS slot $SLOT"
-cryptsetup luksKillSlot $DISK $SLOT
+if [ $CLEAR_SLOT -eq 1 ]; then
+	echo "Killing LUKS slot $SLOT"
+	cryptsetup luksKillSlot $DISK $SLOT
+fi
 echo "Adding yubikey to initrd"
 P1=$(/lib/cryptsetup/askpass "Please insert a yubikey and enter a new password:")
 P2=$(/lib/cryptsetup/askpass "again:")
