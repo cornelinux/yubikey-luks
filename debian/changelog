@@ -1,3 +1,9 @@
+yubikey-luks (0.3.2-1) trusty; uegency=low
+
+  * added parameters for slot and partition.
+
+ -- Cornelius Kölbel <cornelius.koelbel@netknights.it>  Tue, 22 Jul 2014 21:20:00 +0200
+
 yubikey-luks (0.3.1-1) trusty; uegency=low
 
   * added deb dependency
