@@ -39,12 +39,13 @@ if [ $CLEAR_SLOT -eq 1 ]; then
 	cryptsetup luksKillSlot $DISK $SLOT
 fi
 echo "Adding yubikey to initrd"
-P1=$(/lib/cryptsetup/askpass "Please insert a yubikey and enter a new password:")
-P2=$(/lib/cryptsetup/askpass "again:")
+P1=$(/lib/cryptsetup/askpass "Please insert a yubikey and enter a new password. This is the password that will only work while your yubikey is installed in your computer.")
+P2=$(/lib/cryptsetup/askpass "Please enter the yubikey password again:")
 if [ "$P1" != "$P2" ]; then
 	echo "Passwords do not match"
 	exit 1
 fi
+echo "You may now be prompted for an existing passphrase. This is NOT the passphrase you just entered, this is the passphrase that you currently use to unlock your LUKS encrypted drive."
 R="$(ykchalresp -2 "$P1" 2>/dev/null || true)"
 touch $TMP_FILE
 chmod 600 $TMP_FILE
