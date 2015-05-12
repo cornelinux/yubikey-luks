@@ -34,6 +34,8 @@ while getopts ":s:d:hc" opt; do
   esac
 done
 
+echo "This script will utilize slot $SLOT on drive $DISK.  If this is not what you intended, exit now!"
+
 if [ $CLEAR_SLOT -eq 1 ]; then
 	echo "Killing LUKS slot $SLOT"
 	cryptsetup luksKillSlot $DISK $SLOT
