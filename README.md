@@ -49,11 +49,9 @@ Manage several Yubikeys and Machines
 ------------------------------------
 
 It is possible to manage several Yubikeys and machines.
-You need to use privacyIDEA to maange the Yubikeys and
+You need to use privacyIDEA to manage the Yubikeys and
 the privacyIDEA admin client to push the Yubikey responses
 to the LUKS slots.
 
 See https://github.com/privacyidea/privacyideaadm and
 https://github.com/privacyidea/privacyidea
-
-
