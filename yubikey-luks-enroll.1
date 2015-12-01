@@ -1,0 +1,63 @@
+.\"                                      Hey, EMACS: -*- nroff -*-
+.\" (C) Copyright 2015 Markus Frosch <lazyfrosch@debian.org>
+.\"
+.\"     Cornelius Kölbel <cornelius@privacyidea>
+.\"                      Add the prerequisites
+.TH YUBIKEY-LUKS-ENROLL 1 "2015-12-01"
+.\" Please adjust this date whenever revising the manpage.
+.\"
+.\" Some roff macros, for reference:
+.\" .nh        disable hyphenation
+.\" .hy        enable hyphenation
+.\" .ad l      left justify
+.\" .ad b      justify to both left and right margins
+.\" .nf        disable filling
+.\" .fi        enable filling
+.\" .br        insert line break
+.\" .sp <n>    insert n+1 empty lines
+.\" for manpage-specific macros, see man(7)
+.SH NAME
+yubikey-luks-enroll - enroll your yubikey for usage with LUKS
+.SH SYNOPSIS
+.B yubikey-luks-enroll
+.RI "[ \-s 3 ] [ \-d /dev/sda6 ] [ \-c ]"
+.SH DESCRIPTION
+With this tool you can take a YubiKey with challenge-response enabled on slot 2
+to add a LUKS / cryptsetup key slot.
+
+Your chosen PIN or password, plus your YubiKey can generate a response that is
+added as a key to the cryptsetup disk.
+
+On the next boot you can insert your YubiKey into a USB slot, enter your
+password, to unlock the disk. Alternatively you can enter any other passphrase
+that is valid for that disk.
+.SH OPTIONS
+The following options change the behavior of the tool.
+.TP
+.B \-h
+Show summary of options.
+.TP
+.B \-s
+The LUKS slot to save the passphrase to. (default: 7)
+.TP
+.B \-c
+Clear the chosen LUKS slot at first.
+.TP
+.B \-d
+The disk device to work with (default: /dev/sda3)
+
+.SH PREREQUISITES
+Before adding the Yubikey to the LUKS slot, you need to initialize
+your Yubikey. You can do so using the privacyIDEA management system
+or simply by using the command line. The following command will
+create a key for challenges response in Yubikey slot 2:
+
+    ykpersonalize -2 -ochal-resp -ochal-hmac -ohmac-lt64 -oserial-api-visible   
+
+After this, you can use yubikey-luks-enroll to assign this Yubikey
+to an LUKS slot.
+
+.SH SEE ALSO
+.BR cryptsetup (1),
+.BR ykpersonalize (1),
+.BR ykchalresp (1).
