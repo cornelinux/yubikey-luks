@@ -3,6 +3,11 @@
 # This is /sbin/ykluks-keyscript, which gets called when unlocking the disk
 #
 set -e
+. /etc/ykluks.cfg
+
+if [ -z "$WELCOME_TEXT" ]; then
+    WELCOME_TEXT="Please insert yubikey and press enter or enter a valid passphrase"
+fi
 
 message()
 {
@@ -34,7 +39,7 @@ if [ -z "$cryptkeyscript" ]; then
     fi
 fi
 
-PW="$($cryptkeyscript "Please insert yubikey and press enter or enter a valid passphrase")"
+PW="$($cryptkeyscript "$WELCOME_TEXT")"
 	
 if check_yubikey_present; then
 	message "Accessing yubikey..."

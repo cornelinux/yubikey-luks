@@ -35,8 +35,6 @@ You can now assign the Yubikey to a slot using the tool
 
 	yubikey-luks-enroll
 
-Note: The partition is hardcoded in yubikey-luks-enroll. You might need to change this!
-
 Technically this is done by writing the response to your password (1st factor
 knowlege) created by the Yubikey (2nd factor possession) to a key slot.
 
@@ -44,6 +42,18 @@ Admitted - If the attacker was able to phish this response which looks like
 this:
 	bd438575f4e8df965c80363f8aa6fe1debbe9ea9
 it can be used as normal password.
+
+Changing the welcome text
+-------------------------
+
+If you want to change the welcome text a.k.a. the passphrase prompt you can edit
+the file /etc/ykluks.cfg.
+
+After changing this file, you need to run
+
+  update-initramfs -u
+
+so that the changes get transferred to the initramfs.
 
 Manage several Yubikeys and Machines
 ------------------------------------

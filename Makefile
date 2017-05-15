@@ -3,7 +3,7 @@ info:
 	@echo "ppa-dev       - upload to ppa launchpad. Development"
 	@echo "ppa	     - upload to ppa launchpad. Stable"
 
-VERSION=0.4
+VERSION=0.4.1
 SRC_DIR = yubikey_luks.orig
 
 debianize:
