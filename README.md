@@ -36,7 +36,7 @@ You can now assign the Yubikey to a slot using the tool
 	yubikey-luks-enroll
 
 Technically this is done by writing the response to your password (1st factor
-knowlege) created by the Yubikey (2nd factor possession) to a key slot.
+knowledge) created by the Yubikey (2nd factor possession) to a key slot.
 
 Admitted - If the attacker was able to phish this response which looks like
 this:
