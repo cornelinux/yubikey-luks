@@ -51,7 +51,7 @@ echo "You may now be prompted for an existing passphrase. This is NOT the passph
 R="$(ykchalresp -2 "$P1" 2>/dev/null || true)"
 touch $TMP_FILE
 chmod 600 $TMP_FILE
-echo -n "$R" > $TMP_FILE
+echo -n "$P1$R" > $TMP_FILE
 cryptsetup --key-slot=$SLOT luksAddKey $DISK $TMP_FILE
 rm $TMP_FILE
 exit 0
