@@ -45,7 +45,11 @@ if check_yubikey_present; then
 	message "Accessing yubikey..."
     R="$(ykchalresp -2 "$PW" 2>/dev/null || true)"
 	message "Retrieved the response from the Yubikey"
-	echo -n "$PW$R"
+	if [ "$CONCATENATE" = "1" ]; then
+		echo -n "$PW$R"
+	else
+	        echo -n "$R"
+	fi
 else
 	echo -n "$PW"
 fi
