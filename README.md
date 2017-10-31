@@ -43,6 +43,8 @@ this:
 	bd438575f4e8df965c80363f8aa6fe1debbe9ea9
 it can be used as normal password.
 
+If you set CONCATENATE=1 option in the file /etc/ykluks.cfg then both your password and Yubikey response will be bundled together and written to key slot: passwordbd438575f4e8df965c80363f8aa6fe1debbe9ea9
+
 Changing the welcome text
 -------------------------
 
