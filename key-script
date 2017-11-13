@@ -27,7 +27,11 @@ check_yubikey_present() {
 udevadm settle || true
 
 # source for log_*_msg() functions, see LP: #272301
-. /scripts/functions
+if [ -e /scripts/functions ] ; then
+	. /scripts/functions
+else
+	. /usr/share/initramfs-tools/scripts/functions
+fi
 
 if [ -z "$cryptkeyscript" ]; then
 	cryptkey="Unlocking the disk $cryptsource ($crypttarget)\nEnter passphrase: "
