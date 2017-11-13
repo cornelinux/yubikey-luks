@@ -46,6 +46,11 @@ P2=$(/lib/cryptsetup/askpass "Please enter the yubikey password again:")
 if [ "$P1" != "$P2" ]; then
 	echo "Passwords do not match"
 	exit 1
+
+if [ "$HASH" = "1" ]; then
+	P1=$(printf %s "$P1" | sha256sum | awk '{print $1}') 
+fi
+
 fi
 echo "You may now be prompted for an existing passphrase. This is NOT the passphrase you just entered, this is the passphrase that you currently use to unlock your LUKS encrypted drive."
 R="$(ykchalresp -2 "$P1" 2>/dev/null || true)"
