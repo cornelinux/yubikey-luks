@@ -28,7 +28,7 @@ while getopts ":d:n:hv" opt; do
 		echo 
 		echo " -d <partition>: set the partition"
 		echo " -n <name>     : set the container name"
-                echo " -v            : show input/output in cleartext"
+		echo " -v            : show input/output in cleartext"
 		echo
 		exit 1
 		;;
