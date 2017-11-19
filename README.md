@@ -10,6 +10,8 @@ The keyscript allows to boot the machine with either
 the password and the Yubikey or with a normal password
 from any key slot.
 
+luksSuspend/luksResume integration is inspired and based on https://github.com/zhongfu/ubuntu-luks-suspend
+
 initialize Yubikey
 ------------------
 
