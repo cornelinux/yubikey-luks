@@ -1,0 +1,68 @@
+#!/bin/sh
+DISK="/dev/sda3"
+NAME="yubikey-luks"
+DBG=0
+TMP_FILE=/tmp/new_key
+set -e
+. /etc/ykluks.cfg
+
+if [ "$(id -u)" -ne 0 ]; then
+  echo "You must be root." 1>&2
+  exit 1
+fi
+
+while getopts ":d:n:hv" opt; do
+  case $opt in
+	d)
+		DISK=$OPTARG
+		echo "setting disk to $OPTARG."
+		;;
+	n)
+		NAME=$OPTARG
+		echo "setting name to $OPTARG."
+		;;
+		v)      DBG=1
+		echo "debugging enabled"
+		;;
+	h)
+		echo 
+		echo " -d <partition>: set the partition"
+		echo " -n <name>     : set the container name"
+		echo " -v            : show input/output in cleartext"
+		echo
+		exit 1
+		;;
+	\?)
+		echo "Invalid option: -$OPTARG" >&2
+		;;
+  esac
+done
+
+echo "This script will try opening $NAME LUKS container on drive $DISK . If this is not what you intended, exit now!"
+
+P1=$(/lib/cryptsetup/askpass "Please insert a yubikey and enter password created with yubikey-luks-enroll.")
+	if [ "$DBG" = "1" ]; then echo "Password: $P1"; fi
+
+if [ "$HASH" = "1" ]; then
+	P1=$(printf %s "$P1" | sha256sum | awk '{print $1}')
+		if [ "$DBG" = "1" ]; then echo "Password hash: $P1"; fi
+fi
+
+R="$(ykchalresp -2 "$P1" 2>/dev/null || true)"
+	if [ "$DBG" = "1" ]; then echo "Yubikey response: $R"; fi
+
+touch $TMP_FILE
+chmod 600 $TMP_FILE
+
+if [ "$CONCATENATE" = "1" ]; then
+	echo -n "$P1$R" > $TMP_FILE
+		if [ "$DBG" = "1" ]; then echo "LUKS key: $P1$R"; fi
+else
+	echo -n "$R" > $TMP_FILE
+		if [ "$DBG" = "1" ]; then echo "LUKS key: $R"; fi
+fi
+
+cryptsetup --key-file=$TMP_FILE luksOpen "$DISK" "$NAME"
+shred -u $TMP_FILE
+
+exit 0
