@@ -13,3 +13,7 @@ override_dh_install:
 	install -D -o root -g root -m755 yubikey-luks-enroll debian/yubikey-luks/usr/bin/yubikey-luks-enroll
 	install -D -o root -g root -m644 yubikey-luks-enroll.1 debian/yubikey-luks/usr/man/man1/yubikey-luks-enroll.1
 	install -D -o root -g root -m644 ykluks.cfg debian/yubikey-luks/etc/ykluks.cfg
+	install -D -o root -g root -m755 yubikey-luks-suspend debian/yubikey-luks/usr/lib/yubikey-luks-suspend/yubikey-luks-suspend
+	install -D -o root -g root -m755 initramfs-suspend debian/yubikey-luks/usr/lib/yubikey-luks-suspend/initramfs-suspend
+	install -D -o root -g root -m755 hook-luks-suspend debian/yubikey-luks/usr/share/initramfs-tools/hooks/luks-suspend
+	install -D -o root -g root -m644 systemd-suspend.service debian/yubikey-luks/etc/systemd/system/systemd-suspend.service
