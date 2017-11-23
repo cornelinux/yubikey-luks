@@ -15,3 +15,6 @@ After=sleep.target
 [Service]
 Type=oneshot
 ExecStart=/bin/openvt -ws /usr/lib/yubikey-luks-suspend/yubikey-luks-suspend
+
+[Install]
+Alias=systemd-suspend.service
