@@ -29,7 +29,6 @@ sync
 echo mem > /sys/power/state
 
 # Resume root device
-TMP_FILE=/run/new_key
 . /etc/ykluks.cfg
 
 [ -z "${cryptname}" ] ||
@@ -42,17 +41,12 @@ TMP_FILE=/run/new_key
 
 	R="$(ykchalresp -2 "$P1" 2>/dev/null || true)"
 
-	touch "$TMP_FILE"
-	chmod 600 "$TMP_FILE"
-
 	if [ "$CONCATENATE" = "1" ]; then
-		echo -n "$P1$R" > "$TMP_FILE"
+		printf %s "$P1$R" | cryptsetup luksOpen "$DISK" "$NAME" 2>&1;
 	else
-		echo -n "$R" > "$TMP_FILE"
+		printf %s "$R" | cryptsetup luksOpen "$DISK" "$NAME" 2>&1;
 	fi
-
-        cryptsetup --key-file="$TMP_FILE" luksResume "${cryptname}"
-	rm -rf "$TMP_FILE"
+	
         [ $? -le 1 ] && break
         sleep 2
     done
