@@ -3,7 +3,7 @@ SLOT=7
 DISK="/dev/sda3"
 CLEAR_SLOT=0
 DBG=0
-TMP_FILE=/tmp/new_key
+
 set -e
 . /etc/ykluks.cfg
 
@@ -71,18 +71,12 @@ echo "You may now be prompted for an existing passphrase. This is NOT the passph
 R="$(ykchalresp -2 "$P1" 2>/dev/null || true)"
 	if [ "$DBG" = "1" ]; then echo "Yubikey response: $R"; fi
 
-touch $TMP_FILE
-chmod 600 $TMP_FILE
-
 if [ "$CONCATENATE" = "1" ]; then
-	echo -n "$P1$R" > $TMP_FILE
+	printf %s "$P1$R" | cryptsetup luksOpen "$DISK" "$NAME" 2>&1;
 		if [ "$DBG" = "1" ]; then echo "LUKS key: $P1$R"; fi
 else
-	echo -n "$R" > $TMP_FILE
+	printf %s "$R" | cryptsetup luksOpen "$DISK" "$NAME" 2>&1;
 		if [ "$DBG" = "1" ]; then echo "LUKS key: $R"; fi
 fi
-
-cryptsetup --key-slot="$SLOT" luksAddKey "$DISK" $TMP_FILE
-shred -u $TMP_FILE
 
 exit 0
