@@ -32,8 +32,8 @@ while getopts ":s:d:hcv" opt; do
 		echo 
 		echo " -d <partition>: set the partition"
 		echo " -s <slot>     : set the slot"
-                echo " -c            : clear the slot prior to writing"
-                echo " -v            : show input/output in cleartext"
+		echo " -c            : clear the slot prior to writing"
+		echo " -v            : show input/output in cleartext"
 		echo
 		exit 1
 		;;
