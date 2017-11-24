@@ -42,9 +42,9 @@ echo mem > /sys/power/state
 	R="$(ykchalresp -2 "$P1" 2>/dev/null || true)"
 
 	if [ "$CONCATENATE" = "1" ]; then
-		printf %s "$P1$R" | cryptsetup luksOpen "$DISK" "$NAME" 2>&1;
+		printf %s "$P1$R" | cryptsetup luksResume "${cryptname}" 2>&1;
 	else
-		printf %s "$R" | cryptsetup luksOpen "$DISK" "$NAME" 2>&1;
+		printf %s "$R" | cryptsetup luksResume "${cryptname}" 2>&1;
 	fi
 	
         [ $? -le 1 ] && break
