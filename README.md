@@ -69,6 +69,13 @@ You can enable yubikey-luks-suspend module which allows for automatically lockin
  
         systemctl enable yubikey-luks-suspend.service
 
+Open LUKS container protected with yubikey-luks
+------------------------------------
+
+You can open LUKS container protected with yubikey-luks on running system
+
+        yubikey-luks-open
+
 Manage several Yubikeys and Machines
 ------------------------------------
 

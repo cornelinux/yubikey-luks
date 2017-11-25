@@ -9,6 +9,7 @@ override_dh_install:
 	install -D -o root -g root -m755 script-top debian/yubikey-luks/usr/share/initramfs-tools/scripts/local-top/yubikey-luks
 	install -D -o root -g root -m755 script-bottom debian/yubikey-luks/usr/share/initramfs-tools/scripts/local-bottom/yubikey-luks
 	install -D -o root -g root -m755 key-script debian/yubikey-luks/usr/share/yubikey-luks/ykluks-keyscript
+	install -D -o root -g root -m755 yubikey-luks-open debian/yubikey-luks/usr/bin/yubikey-luks-open
 	install -D -o root -g root -m755 yubikey-luks-enroll debian/yubikey-luks/usr/bin/yubikey-luks-enroll
 	install -D -o root -g root -m644 yubikey-luks-enroll.1 debian/yubikey-luks/usr/man/man1/yubikey-luks-enroll.1
 	install -D -o root -g root -m644 ykluks.cfg debian/yubikey-luks/etc/ykluks.cfg
