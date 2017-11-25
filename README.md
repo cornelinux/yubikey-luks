@@ -62,14 +62,6 @@ After changing this file, you need to run
 
 so that the changes get transferred to the initramfs.
 
-Open LUKS container protected with yubikey-luks
-------------------------------------
-
-You can open LUKS container protected with yubikey-luks on running system
-
-        yubikey-luks-open
-
-
 Manage several Yubikeys and Machines
 ------------------------------------
 
