@@ -3,7 +3,7 @@ SLOT=7
 DISK="/dev/sda3"
 CLEAR_SLOT=0
 DBG=0
-TMP_FILE=/tmp/new_key
+
 set -e
 . /etc/ykluks.cfg
 
@@ -32,8 +32,8 @@ while getopts ":s:d:hcv" opt; do
 		echo 
 		echo " -d <partition>: set the partition"
 		echo " -s <slot>     : set the slot"
-                echo " -c            : clear the slot prior to writing"
-                echo " -v            : show input/output in cleartext"
+		echo " -c            : clear the slot prior to writing"
+		echo " -v            : show input/output in cleartext"
 		echo
 		exit 1
 		;;
@@ -67,22 +67,18 @@ if [ "$HASH" = "1" ]; then
 		if [ "$DBG" = "1" ]; then echo "Password hash: $P1"; fi
 fi
 
-echo "You may now be prompted for an existing passphrase. This is NOT the passphrase you just entered, this is the passphrase that you currently use to unlock your LUKS encrypted drive."
 R="$(ykchalresp -2 "$P1" 2>/dev/null || true)"
 	if [ "$DBG" = "1" ]; then echo "Yubikey response: $R"; fi
 
-touch $TMP_FILE
-chmod 600 $TMP_FILE
+OLD=$(/lib/cryptsetup/askpass "Please provide an existing passphrase. This is NOT the passphrase you just entered, this is the passphrase that you currently use to unlock your LUKS encrypted drive:")
+	if [ "$DBG" = "1" ]; then echo "Old passphrase: $OLD"; fi
 
 if [ "$CONCATENATE" = "1" ]; then
-	echo -n "$P1$R" > $TMP_FILE
+	printf '%s\n' "$OLD" "$P1$R" "$P1$R" | cryptsetup --key-slot="$SLOT" luksAddKey "$DISK" 2>&1;
 		if [ "$DBG" = "1" ]; then echo "LUKS key: $P1$R"; fi
 else
-	echo -n "$R" > $TMP_FILE
+	printf '%s\n' "$OLD" "$R" "$R" | cryptsetup --key-slot="$SLOT" luksAddKey "$DISK" 2>&1;
 		if [ "$DBG" = "1" ]; then echo "LUKS key: $R"; fi
 fi
-
-cryptsetup --key-slot="$SLOT" luksAddKey "$DISK" $TMP_FILE
-shred -u $TMP_FILE
 
 exit 0
