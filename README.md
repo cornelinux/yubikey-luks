@@ -10,6 +10,8 @@ The keyscript allows to boot the machine with either
 the password and the Yubikey or with a normal password
 from any key slot.
 
+luksSuspend/luksResume integration is inspired and based on https://github.com/zhongfu/ubuntu-luks-suspend
+
 initialize Yubikey
 ------------------
 
@@ -60,13 +62,19 @@ After changing this file, you need to run
 
 so that the changes get transferred to the initramfs.
 
+Enable yubikey-luks-suspend module
+------------------------------------
+
+You can enable yubikey-luks-suspend module which allows for automatically locking encrypted LUKS containers and wiping keys from memory on suspend and unlocking them on resume by using luksSuspend, luksResume commands.
+ 
+        systemctl enable yubikey-luks-suspend.service
+
 Open LUKS container protected with yubikey-luks
 ------------------------------------
 
 You can open LUKS container protected with yubikey-luks on running system
 
         yubikey-luks-open
-
 
 Manage several Yubikeys and Machines
 ------------------------------------

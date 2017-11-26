@@ -1,0 +1,55 @@
+#!/bin/sh
+# Copyright 2013 Vianney le Clément de Saint-Marcq <vleclement@gmail.com>  
+# Copyright 2017 Zhongfu Li <me@zhongfu.li>
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; version 3 of the License.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with This program.  If not, see http://www.gnu.org/licenses/.
+
+cryptname="${1}"
+
+# Start udev from initramfs
+/lib/systemd/systemd-udevd --daemon --resolve-names=never
+
+# Sync one more time, just in case
+sync
+
+# Suspend root device
+[ -z "${cryptname}" ] || cryptsetup luksSuspend "${cryptname}"
+
+# Suspend the system
+echo mem > /sys/power/state
+
+# Resume root device
+. /etc/ykluks.cfg
+
+[ -z "${cryptname}" ] ||
+    while true; do
+	P1=$(/lib/cryptsetup/askpass "$WELCOME_TEXT")
+
+	if [ "$HASH" = "1" ]; then
+		P1=$(printf %s "$P1" | sha256sum | awk '{print $1}')
+	fi
+
+	R="$(ykchalresp -2 "$P1" 2>/dev/null || true)"
+
+	if [ "$CONCATENATE" = "1" ]; then
+		printf %s "$P1$R" | cryptsetup luksResume "${cryptname}" 2>&1;
+	else
+		printf %s "$R" | cryptsetup luksResume "${cryptname}" 2>&1;
+	fi
+	
+        [ $? -le 1 ] && break
+        sleep 2
+    done
+
+# Stop udev from initramfs, as the real daemon from rootfs will be restarted
+udevadm control --exit
