@@ -1,3 +1,14 @@
+yubikey-luks (0.5.1-2) trusty; urgency=low
+
+  * Rewritten in bash
+  * Added lots of error checking
+  * Added function to determine root disk instead of hard-coding sda
+  * Added check for key slot before going further
+  * Changed all flag checks to numbers
+  * Added strict mode.
+
+ -- Rob Johnson <rob.johnson@diffblue.com>  Wed, 06 Dec 2017 17:04:42 +0000
+
 yubikey-luks (0.5.1-1) trusty; urgency=low
 
   * Avoid writing temp password to disk
