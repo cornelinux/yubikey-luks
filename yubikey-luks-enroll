@@ -1,11 +1,24 @@
-#!/bin/sh
-SLOT=7
-DISK="/dev/sda3"
-CLEAR_SLOT=0
-DBG=0
+#!/bin/bash
+
+set -euo pipefail
+
+#Instead of assuming /dev/sda3, this function reads /etc/crypttab for the first non-cryptswap entry and then
+#queries cryptsetup to determine the actual device. More reliable, especially for computers using NVMe SSDs.
+function getLUKSRootDisk() {
+	luksDevice=$(grep -v cryptswap /etc/crypttab | awk '{print $1}');
+	DISK=$(cryptsetup status $luksDevice | grep 'device: ' | awk '{print $2}')
+}
+
+
+SLOT=7;
+DISK='';
+CLEAR_SLOT=0;
+DBG=0;
 
 set -e
 . /etc/ykluks.cfg
+
+getLUKSRootDisk;
 
 if [ "$(id -u)" -ne 0 ]; then
   echo "You must be root." 1>&2
@@ -15,18 +28,28 @@ fi
 while getopts ":s:d:hcv" opt; do
   case $opt in
 	s)
-		SLOT=$OPTARG
-		echo "setting slot to $OPTARG."
+		if [ $OPTARG -gt -1 ] && [ $OPTARG -lt 8 ]; then
+			SLOT=$OPTARG
+			echo "Setting slot to $OPTARG."
+		else
+			echo "Invalid slot specified, choose one slot between 0 and 7 or omit this option to choose the default ($SLOT)";
+			exit 3;
+		fi;
 		;;
 	d)
-		DISK=$OPTARG
-		echo "setting disk to $OPTARG."
+		if [ -b $OPTARG ]; then #Check it's a block device
+			DISK=$OPTARG
+			echo "Setting disk to $OPTARG."
+		else
+			echo "$OPTARG is not a block device!"
+			exit 4;
+		fi
 		;;
 	c)      CLEAR_SLOT=1
-		echo "clearing slot"
+		echo "Clearing slot"
 		;;
 	v)      DBG=1
-		echo "debugging enabled"
+		echo "Debugging enabled"
 		;;
 	h)
 		echo 
@@ -48,37 +71,44 @@ echo "This script will utilize slot $SLOT on drive $DISK.  If this is not what y
 if [ $CLEAR_SLOT -eq 1 ]; then
 	echo "Killing LUKS slot $SLOT"
 	cryptsetup luksKillSlot "$DISK" "$SLOT"
+else
+	SLOT_STATUS=$(cryptsetup luksDump "$DISK" | grep "Key Slot $SLOT" | awk '{print $4}');
+	if [ "$SLOT_STATUS" != 'DISABLED' ]; then
+		echo "Slot $SLOT is occupied and -c is not specified! Clear this slot before attempting to set a new key.";
+		exit 2;
+	fi
 fi
 
 echo "Adding yubikey to initrd"
-P1=$(/lib/cryptsetup/askpass "Please insert a yubikey and enter a new password. This is the password that will only work while your yubikey is installed in your computer.")
-	if [ "$DBG" = "1" ]; then echo "Password: $P1"; fi
+P1=$(/lib/cryptsetup/askpass "Please insert a yubikey and enter a new password. This is the password that will only work while your yubikey is installed in your computer.");
+	if [ $DBG -eq 1 ]; then echo "Password: $P1"; fi
 
-P2=$(/lib/cryptsetup/askpass "Please enter the yubikey password again:")
-	if [ "$DBG" = "1" ]; then echo "Password: $P2"; fi
+P2=$(/lib/cryptsetup/askpass "Please enter the yubikey password again:");
+	if [ $DBG -eq 1 ]; then echo "Password: $P2"; fi
 
-if [ "$P1" != "$P2" ]; then
+if [ "x$P1" != "x$P2" ]; then
 	echo "Passwords do not match"
 	exit 1
 fi
 
-if [ "$HASH" = "1" ]; then
-	P1=$(printf %s "$P1" | sha256sum | awk '{print $1}')
-		if [ "$DBG" = "1" ]; then echo "Password hash: $P1"; fi
+if [ $HASH -eq 1 ]; then
+	P1=$(printf %s "$P1" | sha256sum | awk '{print $1}');
+		if [ $DBG -eq 1 ]; then echo "Password hash: $P1"; fi
 fi
 
-R="$(ykchalresp -2 "$P1" 2>/dev/null || true)"
-	if [ "$DBG" = "1" ]; then echo "Yubikey response: $R"; fi
+#Run the password through the Yubikey. We probably want to know if this fails!
+R=$(ykchalresp -2 "$P1");
+	if [ $DBG -eq 1 ]; then echo "Yubikey response: $R"; fi
 
-OLD=$(/lib/cryptsetup/askpass "Please provide an existing passphrase. This is NOT the passphrase you just entered, this is the passphrase that you currently use to unlock your LUKS encrypted drive:")
-	if [ "$DBG" = "1" ]; then echo "Old passphrase: $OLD"; fi
+OLD=$(/lib/cryptsetup/askpass "Please provide an existing passphrase. This is NOT the passphrase you just entered, this is the passphrase that you currently use to unlock your LUKS encrypted drive:");
+	if [ $DBG -eq 1 ]; then echo "Old passphrase: $OLD"; fi
 
-if [ "$CONCATENATE" = "1" ]; then
+if [ $CONCATENATE -eq 1 ]; then
 	printf '%s\n' "$OLD" "$P1$R" "$P1$R" | cryptsetup --key-slot="$SLOT" luksAddKey "$DISK" 2>&1;
-		if [ "$DBG" = "1" ]; then echo "LUKS key: $P1$R"; fi
+		if [ $DBG -eq 1 ]; then echo "LUKS key: $P1$R"; fi
 else
 	printf '%s\n' "$OLD" "$R" "$R" | cryptsetup --key-slot="$SLOT" luksAddKey "$DISK" 2>&1;
-		if [ "$DBG" = "1" ]; then echo "LUKS key: $R"; fi
+		if [ $DBG -eq 1 ]; then echo "LUKS key: $R"; fi
 fi
 
 exit 0
