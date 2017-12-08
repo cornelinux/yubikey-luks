@@ -15,14 +15,13 @@ DISK='';
 CLEAR_SLOT=0;
 DBG=0;
 
-set -e
 . /etc/ykluks.cfg
 
 getLUKSRootDisk;
 
 if [ "$(id -u)" -ne 0 ]; then
-  echo "You must be root." 1>&2
-  exit 1
+  echo "You must be root." 1>&2;
+  exit 1;
 fi
 
 while getopts ":s:d:hcv" opt; do
@@ -45,32 +44,32 @@ while getopts ":s:d:hcv" opt; do
 			exit 4;
 		fi
 		;;
-	c)      CLEAR_SLOT=1
-		echo "Clearing slot"
+	c)      CLEAR_SLOT=1;
+		echo "Clearing slot";
 		;;
-	v)      DBG=1
-		echo "Debugging enabled"
+	v)      DBG=1;
+		echo "Debugging enabled";
 		;;
 	h)
-		echo 
-		echo " -d <partition>: set the partition"
-		echo " -s <slot>     : set the slot"
-		echo " -c            : clear the slot prior to writing"
-		echo " -v            : show input/output in cleartext"
+		echo;
+		echo " -d <partition>: set the partition";
+		echo " -s <slot>     : set the slot";
+		echo " -c            : clear the slot prior to writing";
+		echo " -v            : show input/output in cleartext";
 		echo
-		exit 1
+		exit 1;
 		;;
 	\?)
-		echo "Invalid option: -$OPTARG" >&2
+		echo "Invalid option: -$OPTARG" >&2;
 		;;
   esac
 done
 
-echo "This script will utilize slot $SLOT on drive $DISK.  If this is not what you intended, exit now!"
+echo "This script will utilize slot $SLOT on drive $DISK.  If this is not what you intended, exit now!";
 
 if [ $CLEAR_SLOT -eq 1 ]; then
-	echo "Killing LUKS slot $SLOT"
-	cryptsetup luksKillSlot "$DISK" "$SLOT"
+	echo "Killing LUKS slot $SLOT";
+	cryptsetup luksKillSlot "$DISK" "$SLOT";
 else
 	SLOT_STATUS=$(cryptsetup luksDump "$DISK" | grep "Key Slot $SLOT" | awk '{print $4}');
 	if [ "$SLOT_STATUS" != 'DISABLED' ]; then
@@ -79,7 +78,7 @@ else
 	fi
 fi
 
-echo "Adding yubikey to initrd"
+echo "Adding yubikey to initrd";
 P1=$(/lib/cryptsetup/askpass "Please insert a yubikey and enter a new password. This is the password that will only work while your yubikey is installed in your computer.");
 	if [ $DBG -eq 1 ]; then echo "Password: $P1"; fi
 
@@ -87,8 +86,8 @@ P2=$(/lib/cryptsetup/askpass "Please enter the yubikey password again:");
 	if [ $DBG -eq 1 ]; then echo "Password: $P2"; fi
 
 if [ "x$P1" != "x$P2" ]; then
-	echo "Passwords do not match"
-	exit 1
+	echo "Passwords do not match";
+	exit 1;
 fi
 
 if [ $HASH -eq 1 ]; then
@@ -111,4 +110,4 @@ else
 		if [ $DBG -eq 1 ]; then echo "LUKS key: $R"; fi
 fi
 
-exit 0
+exit 0;
