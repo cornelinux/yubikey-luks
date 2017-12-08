@@ -6,7 +6,7 @@ set -euo pipefail
 #queries cryptsetup to determine the actual device. More reliable, especially for computers using NVMe SSDs.
 function getLUKSRootDisk() {
 	luksDevice=$(grep -v cryptswap /etc/crypttab | awk '{print $1}');
-	DISK=$(cryptsetup status $luksDevice | grep 'device: ' | awk '{print $2}')
+	DISK=$(cryptsetup status "$luksDevice" | grep 'device: ' | awk '{print $2}')
 }
 
 
@@ -27,7 +27,7 @@ fi
 while getopts ":s:d:hcv" opt; do
   case $opt in
 	s)
-		if [ $OPTARG -gt -1 ] && [ $OPTARG -lt 8 ]; then
+		if [ "$OPTARG" -gt -1 ] && [ "$OPTARG" -lt 8 ]; then
 			SLOT=$OPTARG
 			echo "Setting slot to $OPTARG."
 		else
@@ -36,7 +36,7 @@ while getopts ":s:d:hcv" opt; do
 		fi;
 		;;
 	d)
-		if [ -b $OPTARG ]; then #Check it's a block device
+		if [ -b "$OPTARG" ]; then #Check it's a block device
 			DISK=$OPTARG
 			echo "Setting disk to $OPTARG."
 		else
@@ -90,7 +90,7 @@ if [ "x$P1" != "x$P2" ]; then
 	exit 1;
 fi
 
-if [ $HASH -eq 1 ]; then
+if [ "$HASH" -eq 1 ]; then
 	P1=$(printf %s "$P1" | sha256sum | awk '{print $1}');
 		if [ $DBG -eq 1 ]; then echo "Password hash: $P1"; fi
 fi
@@ -102,7 +102,7 @@ R=$(ykchalresp -2 "$P1");
 OLD=$(/lib/cryptsetup/askpass "Please provide an existing passphrase. This is NOT the passphrase you just entered, this is the passphrase that you currently use to unlock your LUKS encrypted drive:");
 	if [ $DBG -eq 1 ]; then echo "Old passphrase: $OLD"; fi
 
-if [ $CONCATENATE -eq 1 ]; then
+if [ "$CONCATENATE" -eq 1 ]; then
 	printf '%s\n' "$OLD" "$P1$R" "$P1$R" | cryptsetup --key-slot="$SLOT" luksAddKey "$DISK" 2>&1;
 		if [ $DBG -eq 1 ]; then echo "LUKS key: $P1$R"; fi
 else
