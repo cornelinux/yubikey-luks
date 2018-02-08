@@ -1,7 +1,8 @@
 info:
-	@echo "builddeb      - building debian package for Ubuntu 14.04LTS"
-	@echo "ppa-dev       - upload to ppa launchpad. Development"
-	@echo "ppa	     - upload to ppa launchpad. Stable"
+	@echo "builddeb        - building debian package for Ubuntu LTS"
+	@echo "builddeb-nosign - building debian package for Ubuntu LTS WITHOUT SIGNING"
+	@echo "ppa-dev         - upload to ppa launchpad. Development"
+	@echo "ppa	       - upload to ppa launchpad. Stable"
 
 VERSION=0.5.1
 SRC_DIR = yubikey_luks.orig
@@ -15,6 +16,10 @@ debianize:
 builddeb:
 	make debianize
 	(cd DEBUILD/${SRC_DIR}; debuild)
+
+builddeb-nosign:
+	make debianize
+	(cd DEBUILD/${SRC_DIR}; debuild -uc -us)
 
 ppa-dev:
 	make debianize
