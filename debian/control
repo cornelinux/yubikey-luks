@@ -7,7 +7,7 @@ Standards-Version: 3.8.3
 
 Package: yubikey-luks
 Architecture: all
-Depends: initramfs-tools, yubikey-personalization (>= 1.5), yubikey-personalization
+Depends: initramfs-tools, yubikey-personalization (>= 1.5), yubikey-personalization, udisks2, expect
 Description: Yubikey two factor authentication with LUKS
  Using the Yubikey in challenge response mode to
  do two factor authentication with LUKS.
