@@ -1,8 +1,8 @@
 info:
-	@echo "builddeb        - building debian package for Ubuntu LTS"
-	@echo "builddeb-nosign - building debian package for Ubuntu LTS WITHOUT SIGNING"
-	@echo "ppa-dev         - upload to ppa launchpad. Development"
-	@echo "ppa	       - upload to ppa launchpad. Stable"
+	@echo "builddeb [NO_SIGN=1]  - build deb package for Ubuntu LTS [NO_SIGN disables signing]"
+	@echo "clean                 - clean build directory DEBUILD"
+	@echo "ppa-dev               - upload to ppa launchpad. Development"
+	@echo "ppa                   - upload to ppa launchpad. Stable"
 
 VERSION=0.5.1
 SRC_DIR = yubikey_luks.orig
@@ -15,11 +15,11 @@ debianize:
 
 builddeb:
 	make debianize
+ifndef NO_SIGN
 	(cd DEBUILD/${SRC_DIR}; debuild)
-
-builddeb-nosign:
-	make debianize
+else
 	(cd DEBUILD/${SRC_DIR}; debuild -uc -us)
+endif
 
 ppa-dev:
 	make debianize
@@ -33,4 +33,5 @@ ppa:
 	# Upload to launchpad:
 	dput ppa:privacyidea/privacyidea DEBUILD/yubikey-luks_${VERSION}-?_source.changes
 
-
+clean:
+	rm -fr DEBUILD

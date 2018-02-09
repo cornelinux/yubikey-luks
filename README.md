@@ -22,9 +22,9 @@ Initialize the Yubikey for challenge response in slot 2
 install package
 ---------------
 
-Build the package:
+Build the package (without signing it):
 
-	make builddeb
+	make builddeb NO_SIGN=1
 
 Install the package:
 
