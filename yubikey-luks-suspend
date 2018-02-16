@@ -118,9 +118,9 @@ systemctl stop systemd-udevd.service
 
 # Stop systemd-journald and prevent it from being autostarted.
 # It seems to block suspend with file I/O
+systemctl stop systemd-journald-audit.socket
 systemctl stop systemd-journald-dev-log.socket
 systemctl stop systemd-journald.socket
-systemctl stop systemd-journald-audit.socket
 systemctl stop systemd-journald.service
 
 # Journalled ext4 filesystems in kernel versions 3.11+ will block suspend
@@ -143,8 +143,8 @@ chroot . /suspend "$CRYPTNAME"
 mount_barrier
 
 # Restart systemd-journald
-systemctl start systemd-journald-dev-log.socket
 systemctl start systemd-journald.socket
+systemctl start systemd-journald-dev-log.socket
 systemctl start systemd-journald-audit.socket
 systemctl start systemd-journald.service
 
