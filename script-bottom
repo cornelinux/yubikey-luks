@@ -8,7 +8,7 @@ PREREQ=""
 message()
 {
     if [ -x /bin/plymouth ] && plymouth --ping; then
-        plymouth message --text="$@"
+        plymouth message --text="$*"
     else
         echo "$@" >&2
     fi

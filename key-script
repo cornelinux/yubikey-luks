@@ -12,7 +12,7 @@ fi
 message()
 {
     if [ -x /bin/plymouth ] && plymouth --ping; then
-        plymouth message --text="$@"
+        plymouth message --text="$*"
     else
         echo "$@" >&2
     fi
@@ -34,10 +34,10 @@ else
 fi
 
 if [ -z "$cryptkeyscript" ]; then
-	cryptkey="Unlocking the disk $cryptsource ($crypttarget)\nEnter passphrase: "
+	cryptkey="Unlocking the disk $cryptsource ($crypttarget)\\nEnter passphrase: "
 	if [ -x /bin/plymouth ] && plymouth --ping; then
     	cryptkeyscript="plymouth ask-for-password --prompt"
-	    cryptkey=$(printf "$cryptkey")
+	    cryptkey=$(printf '%s' "$cryptkey")
     else
         cryptkeyscript="/lib/cryptsetup/askpass"
     fi
@@ -54,12 +54,12 @@ if check_yubikey_present; then
     R="$(ykchalresp -2 "$PW" 2>/dev/null || true)"
 	message "Retrieved the response from the Yubikey"
 	if [ "$CONCATENATE" = "1" ]; then
-		echo -n "$PW$R"
+		printf '%s' "$PW$R"
 	else
-	        echo -n "$R"
+	        printf '%s' "$R"
 	fi
 else
-	echo -n "$PW"
+	printf '%s' "$PW"
 fi
 
 exit 0
