@@ -157,4 +157,4 @@ systemctl start systemd-udevd.service
 run_dir "${SYSTEM_SLEEP_PATH}" post suspend
 
 # Unlock user sessions
-loginctl unlock-sessions
+#loginctl unlock-sessions
