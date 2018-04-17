@@ -18,6 +18,7 @@ esac
 
 . /usr/share/initramfs-tools/hook-functions
 
+copy_exec /usr/bin/sha256sum
 copy_exec /usr/bin/ykchalresp
 cp /usr/share/yubikey-luks/ykluks-keyscript "${DESTDIR}/sbin/ykluks-keyscript"
 cp /etc/ykluks.cfg "${DESTDIR}/etc/ykluks.cfg"

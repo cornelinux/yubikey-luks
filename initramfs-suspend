@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with This program.  If not, see http://www.gnu.org/licenses/.
 
-cryptname="${1}"
+cryptname=cryptedlvm
 
 # Start udev from initramfs
 /lib/systemd/systemd-udevd --daemon --resolve-names=never

@@ -89,7 +89,7 @@ mount -t ramfs ramfs /run/initramfs
 INITRAMFS="/boot/initrd.img-$(uname -r)"
 [ -e "${INITRAMFS}" ] || exec /lib/systemd/systemd-sleep suspend
 cd "${INITRAMFS_DIR}"
-(cpio --quiet -id; zcat | cpio --quiet -id) < "${INITRAMFS}"
+gzip -dc ${INITRAMFS} | cpio --quiet -id
 chown -R root:root "${INITRAMFS_DIR}"
 chmod -R go-w "${INITRAMFS_DIR}"
 
@@ -157,4 +157,4 @@ systemctl start systemd-udevd.service
 run_dir "${SYSTEM_SLEEP_PATH}" post suspend
 
 # Unlock user sessions
-loginctl unlock-sessions
+#loginctl unlock-sessions
