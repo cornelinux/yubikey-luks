@@ -19,11 +19,6 @@ message()
     return 0
 }
 
-check_yubikey_present() {
-    ykchalresp -2 AreYouThere > /dev/null 2>%1
-    return $?
-}
-
 udevadm settle || true
 
 # source for log_*_msg() functions, see LP: #272301
@@ -46,20 +41,23 @@ fi
 PW="$($cryptkeyscript "$WELCOME_TEXT")"
 
 if [ "$HASH" = "1" ]; then
-	PW=$(printf %s "$PW" | sha256sum | awk '{print $1}')
+    P2=$(printf %s "$PW" | sha256sum | awk '{print $1}')
+else
+    P2="$PW"
 fi
 
-if check_yubikey_present; then
-	message "Accessing yubikey..."
-    R="$(ykchalresp -2 "$PW" 2>/dev/null || true)"
-	message "Retrieved the response from the Yubikey"
-	if [ "$CONCATENATE" = "1" ]; then
-		printf '%s' "$PW$R"
-	else
-	        printf '%s' "$R"
-	fi
+message "Accessing yubikey..."
+R="$(ykchalresp -2 "$P2" 2>/dev/null || true)"
+if [ -n "$R" ]; then
+    message "Retrieved the response from the Yubikey"
+    if [ "$CONCATENATE" = "1" ]; then
+        printf '%s' "$P2$R"
+    else
+        printf '%s' "$R"
+    fi
 else
-	printf '%s' "$PW"
+    message "Yubikey not available or timed out waiting for button press, trying passphrase"
+    printf '%s' "$PW"
 fi
 
 exit 0
