@@ -18,6 +18,6 @@ prereqs)
 esac
 
 #if [ -e /etc/yubikey-challenge ]; then
-    sed -i 's|$|,keyscript=/sbin/ykluks-keyscript|' /conf/conf.d/cryptroot
+    sed -i 's|$|,keyscript=/sbin/ykluks-keyscript|' /cryptroot/crypttab
 #fi
 exit 0
