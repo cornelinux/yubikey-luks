@@ -16,11 +16,15 @@ prereqs)
 	;;
 esac
 
+. /usr/share/yubikey-luks/ykluks-defaults.cfg
+. /etc/ykluks.cfg
+
 . /usr/share/initramfs-tools/hook-functions
 
 copy_exec /usr/bin/ykchalresp
-copy_exec /usr/bin/sha256sum
+copy_exec "$HASH_COMMAND"
 cp /usr/share/yubikey-luks/ykluks-keyscript "${DESTDIR}/sbin/ykluks-keyscript"
+cp /usr/share/yubikey-luks/ykluks-defaults.cfg "${DESTDIR}/etc/ykluks-defaults.cfg"
 cp /etc/ykluks.cfg "${DESTDIR}/etc/ykluks.cfg"
 cp -pnL /usr/lib/yubikey-luks-suspend/initramfs-suspend "${DESTDIR}/suspend"
 chmod 755 "${DESTDIR}/suspend"

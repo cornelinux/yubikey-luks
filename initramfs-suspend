@@ -1,5 +1,5 @@
 #!/bin/sh
-# Copyright 2013 Vianney le Clément de Saint-Marcq <vleclement@gmail.com>  
+# Copyright 2013 Vianney le Clément de Saint-Marcq <vleclement@gmail.com>
 # Copyright 2017 Zhongfu Li <me@zhongfu.li>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -29,6 +29,7 @@ sync
 echo mem > /sys/power/state
 
 # Resume root device
+. /etc/ykluks-defaults.cfg
 . /etc/ykluks.cfg
 
 [ -z "${cryptname}" ] ||
@@ -36,7 +37,7 @@ echo mem > /sys/power/state
 	P1=$(/lib/cryptsetup/askpass "$WELCOME_TEXT")
 
 	if [ "$HASH" = "1" ]; then
-		P1=$(printf %s "$P1" | sha256sum | awk '{print $1}')
+		P1=$(printf %s "$P1" | $HASH_COMMAND $HASH_ARGS | awk '{print $1}')
 	fi
 
 	R="$(ykchalresp -2 "$P1" 2>/dev/null || true)"
@@ -46,7 +47,7 @@ echo mem > /sys/power/state
 	else
 		printf %s "$R" | cryptsetup luksResume "${cryptname}" 2>&1;
 	fi
-	
+
         [ $? -le 1 ] && break
         sleep 2
     done

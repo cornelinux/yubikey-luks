@@ -3,6 +3,7 @@
 # This is /sbin/ykluks-keyscript, which gets called when unlocking the disk
 #
 set -e
+. /etc/ykluks-defaults.cfg
 . /etc/ykluks.cfg
 
 if [ -z "$WELCOME_TEXT" ]; then
@@ -46,7 +47,7 @@ fi
 PW="$($cryptkeyscript "$WELCOME_TEXT")"
 
 if [ "$HASH" = "1" ]; then
-	PW=$(printf %s "$PW" | sha256sum | awk '{print $1}')
+	PW=$(printf %s "$PW" | $HASH_COMMAND $HASH_ARGS | awk '{print $1}')
 fi
 
 if check_yubikey_present; then

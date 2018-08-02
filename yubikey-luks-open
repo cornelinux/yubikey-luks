@@ -4,6 +4,7 @@ NAME="yubikey-luks"
 DBG=0
 
 set -e
+. /usr/share/yubikey-luks/ykluks-defaults.cfg
 . /etc/ykluks.cfg
 
 while getopts ":d:n:hv" opt; do
@@ -21,7 +22,7 @@ while getopts ":d:n:hv" opt; do
 		echo "debugging enabled"
 		;;
 	h)
-		echo 
+		echo
 		echo " -d <partition>: select existing partition"
 		echo " -n <name>     : set the new container name"
 		echo " -v            : show input/output in cleartext"
@@ -40,7 +41,7 @@ P1=$(/lib/cryptsetup/askpass "Please insert a yubikey and enter password created
 	if [ "$DBG" = "1" ]; then echo "Password: $P1"; fi
 
 if [ "$HASH" = "1" ]; then
-	P1=$(printf %s "$P1" | sha256sum | awk '{print $1}')
+	P1=$(printf %s "$P1" | $HASH_COMMAND $HASH_ARGS | awk '{print $1}')
 		if [ "$DBG" = "1" ]; then echo "Password hash: $P1"; fi
 fi
 
