@@ -47,8 +47,18 @@ it can be used as normal password.
 
 If you set CONCATENATE=1 option in the file /etc/ykluks.cfg then both your password and Yubikey response will be bundled together and written to key slot: passwordbd438575f4e8df965c80363f8aa6fe1debbe9ea9
 
-If you set HASH=1 option in the file /etc/ykluks.cfg then your password will be hashed with sha256 algorithm before using as challenge for yubikey: printf password | sha256sum | awk '{print $1}'
+If you set HASH=1 option in the file /etc/ykluks.cfg then your password will be hashed with sha256 algorithm or your configured hashing command before using as challenge for yubikey: printf password | $HASH_COMMAND $HASH_ARGS | awk '{print $1}'
 5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8
+
+If you set HASH_COMMAND in the file /etc/ykluks.cfg then your password will be hashed with the custom command instead of sha256sum. This must be the full path to the binary without arguments such as HASH_COMMAND=/usr/bin/custom-hasher
+
+If you set HASH_ARGS in the file /etc/ykluks.cfg the arguments will be passed to $HASH_COMMAND when it is run to hash the password.
+
+```
+HASH_COMMAND=/usr/bin/custom-hasher
+HASH_ARGS="--cost=14 --salt=99bcda088e1aec8934aafb6c7f49f284"
+printf password | /usr/bin/custom-hasher --cost=14 --salt=99bcda088e1aec8934aafb6c7f49f284 | awk '{print $1}'
+```
 
 Changing the welcome text
 -------------------------
@@ -66,7 +76,7 @@ Enable yubikey-luks-suspend module
 ------------------------------------
 
 You can enable yubikey-luks-suspend module which allows for automatically locking encrypted LUKS containers and wiping keys from memory on suspend and unlocking them on resume by using luksSuspend, luksResume commands.
- 
+
         systemctl enable yubikey-luks-suspend.service
 
 Open LUKS container protected with yubikey-luks

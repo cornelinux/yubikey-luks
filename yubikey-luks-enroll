@@ -5,6 +5,7 @@ CLEAR_SLOT=0
 DBG=0
 
 set -e
+. /usr/share/yubikey-luks/ykluks-defaults.cfg
 . /etc/ykluks.cfg
 
 if [ "$(id -u)" -ne 0 ]; then
@@ -29,7 +30,7 @@ while getopts ":s:d:hcv" opt; do
 		echo "debugging enabled"
 		;;
 	h)
-		echo 
+		echo
 		echo " -d <partition>: set the partition"
 		echo " -s <slot>     : set the slot"
 		echo " -c            : clear the slot prior to writing"
@@ -63,7 +64,7 @@ if [ "$P1" != "$P2" ]; then
 fi
 
 if [ "$HASH" = "1" ]; then
-	P1=$(printf %s "$P1" | sha256sum | awk '{print $1}')
+	P1=$(printf %s "$P1" | $HASH_COMMAND $HASH_ARGS | awk '{print $1}')
 		if [ "$DBG" = "1" ]; then echo "Password hash: $P1"; fi
 fi
 
