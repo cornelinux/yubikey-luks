@@ -24,8 +24,6 @@ check_yubikey_present() {
     return $?
 }
 
-udevadm settle || true
-
 # source for log_*_msg() functions, see LP: #272301
 if [ -e /scripts/functions ] ; then
 	. /scripts/functions
