@@ -36,7 +36,13 @@ done
 
 echo "This script will try opening $NAME LUKS container on drive $DISK . If this is not what you intended, exit now!"
 
-P1=$(/lib/cryptsetup/askpass "Please insert a yubikey and enter password created with yubikey-luks-enroll.")
+while true ; do
+    if lsusb | grep -iq 'yubico'; then break; fi
+    printf "Please insert a yubikey and press enter."
+    read -r _ <&1
+done
+
+P1=$(/lib/cryptsetup/askpass "Enter password created with yubikey-luks-enroll:")
 	if [ "$DBG" = "1" ]; then echo "Password: $P1"; fi
 
 if [ "$HASH" = "1" ]; then
@@ -46,6 +52,11 @@ fi
 
 R="$(ykchalresp -2 "$P1" 2>/dev/null || true)"
 	if [ "$DBG" = "1" ]; then echo "Yubikey response: $R"; fi
+
+if [ -z "$R" ]; then
+    echo "Yubikey not available or timed out waiting for button press"
+    exit 1
+fi
 
 _passphrase=''
 if [ "$CONCATENATE" = "1" ]; then

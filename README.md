@@ -28,7 +28,7 @@ Build the package (without signing it):
 
 Install the package:
 
-	dpkg -i DEBUILD/yubikey-luks_0.?-1_all.deb
+	dpkg -i DEBUILD/yubikey-luks_0.*-1_all.deb
 
 Assign a Yubikey to an LUKS slot
 --------------------------------
