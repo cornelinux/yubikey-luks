@@ -12,14 +12,14 @@ from any key slot.
 
 luksSuspend/luksResume integration is inspired and based on https://github.com/zhongfu/ubuntu-luks-suspend
 
-initialize Yubikey
+Initialize Yubikey
 ------------------
 
 Initialize the Yubikey for challenge response in slot 2
 
 	ykpersonalize -2 -ochal-resp -ochal-hmac -ohmac-lt64 -oserial-api-visible
 
-install package
+Install package
 ---------------
 
 Build the package (without signing it):
@@ -61,6 +61,23 @@ After changing this file, you need to run
   update-initramfs -u
 
 so that the changes get transferred to the initramfs.
+
+Enable yubikey-luks initramfs module
+-------------------------
+
+In order to use yubikey-luks for unlocking LUKS encrypted volume at boot you must append keyscript=/usr/share/yubikey-luks/ykluks-keyscript to the /etc/crypttab file. Example:
+
+	cryptroot /dev/sda none  luks,keyscript=/usr/share/yubikey-luks/ykluks-keyscript
+
+After changing this file, you need to run
+
+  update-initramfs -u
+
+so that the changes get transferred to the initramfs.
+
+Alternatively you may add keyscript=/sbin/ykluks-keyscript to your boot cmdline in cryptoptions. Example:
+
+	cryptoptions=target=cryptroot,source=/dev/sda,keyscript=/sbin/ykluks-keyscript
 
 Enable yubikey-luks-suspend module
 ------------------------------------
