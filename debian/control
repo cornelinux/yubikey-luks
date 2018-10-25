@@ -1,14 +1,23 @@
 Source: yubikey-luks
 Section: admin
-Priority: extra
+Priority: optional
 Maintainer: Cornelius Kölbel <corny@cornelinux.de>
-Build-Depends: debhelper (>= 7.0.50)
-Standards-Version: 3.8.3
+Build-Depends: debhelper (>= 11), dh-exec
+Standards-Version: 4.1.4
+Homepage: https://github.com/cornelinux/yubikey-luks
 
 Package: yubikey-luks
 Architecture: all
-Depends: initramfs-tools, yubikey-personalization (>= 1.5), yubikey-personalization, udisks2, expect
-Description: Yubikey two factor authentication with LUKS
- Using the Yubikey in challenge response mode to
- do two factor authentication with LUKS.
+Depends: cryptsetup, initramfs-tools, yubikey-personalization (>= 1.5), udisks2, expect, ${misc:Depends}
+Description: YubiKey two factor authentication for LUKS disks
+ With this extension to the initramfs-tools, you can unlock a LUKS encrypted
+ disk using your YubiKey as a second factor.
+ .
+ The challenge-response mechanism of the YubiKey is used to generate a response
+ based on a PIN/password you have to enter.
+ .
+ Only the combination of the correct password and the matching YubiKey will
+ generate a response, that is a valid key of the LUKS disk. Alternatively
+ you can use any other LUKS passphrase when the YubiKey is not present.
+ .
  Requires Yubikey 2.2 or newer. 
