@@ -17,7 +17,7 @@ Description: YubiKey two factor authentication for LUKS disks
  based on a PIN/password you have to enter.
  .
  Only the combination of the correct password and the matching YubiKey will
- generate a response, that is a valid key of the LUKS disk. Alternatively
+ generate a response, that is a valid passphrase of the LUKS disk. Alternatively
  you can use any other LUKS passphrase when the YubiKey is not present.
  .
  Requires Yubikey 2.2 or newer. 
