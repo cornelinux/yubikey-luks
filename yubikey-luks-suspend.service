@@ -6,7 +6,7 @@
 #  (at your option) any later version.
 
 [Unit]
-Description=Suspend
+Description=Suspend Crypto on Standby (WARNING: THIS IS HIGHLY EXPERIMENTAL)
 Documentation=man:systemd-suspend.service(8)
 DefaultDependencies=no
 Requires=sleep.target
@@ -14,7 +14,7 @@ After=sleep.target
 
 [Service]
 Type=oneshot
-ExecStart=/bin/openvt -ws /usr/lib/yubikey-luks-suspend/yubikey-luks-suspend
+ExecStart=/bin/openvt -ws /usr/lib/yubikey-luks/yubikey-luks-suspend
 
 [Install]
 Alias=systemd-suspend.service

@@ -40,6 +40,7 @@ fi
 
 PW="$($cryptkeyscript "$WELCOME_TEXT")"
 
+
 if [ "$check_yubikey_present" = "1" ]; then
 	message "Accessing yubikey..."
 	if [ "$HASH" = "1" ]; then
