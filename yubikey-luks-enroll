@@ -22,10 +22,10 @@ while getopts ":s:d:hcv" opt; do
 		DISK=$OPTARG
 		echo "setting disk to $OPTARG."
 		;;
-	c)      CLEAR_SLOT=1
+	c)  CLEAR_SLOT=1
 		echo "clearing slot"
 		;;
-	v)      DBG=1
+	v)  DBG=1
 		echo "debugging enabled"
 		;;
 	h)
@@ -45,7 +45,7 @@ done
 
 echo "This script will utilize slot $SLOT on drive $DISK.  If this is not what you intended, exit now!"
 
-if [ $CLEAR_SLOT -eq 1 ]; then
+if [ "$CLEAR_SLOT" -eq 1 ]; then
 	echo "Killing LUKS slot $SLOT"
 	cryptsetup luksKillSlot "$DISK" "$SLOT"
 fi

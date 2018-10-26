@@ -19,10 +19,7 @@ message()
     return 0
 }
 
-check_yubikey_present() {
-    ykchalresp -2 AreYouThere > /dev/null 2>%1
-    return $?
-}
+check_yubikey_present="$(ykinfo -q -2)"
 
 # source for log_*_msg() functions, see LP: #272301
 if [ -e /scripts/functions ] ; then
@@ -41,9 +38,9 @@ if [ -z "$cryptkeyscript" ]; then
     fi
 fi
 
-PW="$($cryptkeyscript "$WELCOME_TEXT")"
+PW="$("$cryptkeyscript" "$WELCOME_TEXT")"
 
-if check_yubikey_present; then
+if [ "$check_yubikey_present" = 1 ]; then
 	message "Accessing yubikey..."
 	if [ "$HASH" = "1" ]; then
         	PW=$(printf %s "$PW" | sha256sum | awk '{print $1}')
