@@ -31,7 +31,7 @@ CRYPTNAME="$(grep -E "^/dev/mapper/[a-zA-Z0-9_\-]+ / " /proc/mounts | sed -r "s|
 # run_dir DIR ARGS...
 # Run all executable scripts in directory DIR with arguments ARGS
 run_dir() {
-    local dir=$1
+    local dir="$1"
     shift
     find "${dir}" -type f -executable -exec "{}" "$@" ";"
 }
