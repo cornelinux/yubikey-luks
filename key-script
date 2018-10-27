@@ -47,12 +47,17 @@ if [ "$check_yubikey_present" = "1" ]; then
         	PW=$(printf %s "$PW" | sha256sum | awk '{print $1}')
 	fi
     	R="$(ykchalresp -2 "$PW" 2>/dev/null || true)"
-	message "Retrieved the response from the Yubikey"
-	if [ "$CONCATENATE" = "1" ]; then
-		printf '%s' "$PW$R"
+	if [ "$R" ]; then
+		message "Retrieved the response from the Yubikey"
+		if [ "$CONCATENATE" = "1" ]; then
+			printf '%s' "$PW$R"
+		else
+	        	printf '%s' "$R"
+		fi
 	else
-	        printf '%s' "$R"
+		message "Failed to retrieve the response from the Yubikey"
 	fi
+
 else
 	printf '%s' "$PW"
 fi
