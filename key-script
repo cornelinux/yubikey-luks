@@ -19,7 +19,7 @@ message()
     return 0
 }
 
-check_yubikey_present="$(ykinfo -q -2)"
+check_yubikey_present="$(ykinfo -q -2 2>/dev/null || true)"
 
 # source for log_*_msg() functions, see LP: #272301
 if [ -e /scripts/functions ] ; then
