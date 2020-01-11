@@ -12,7 +12,7 @@ if [ "$(id -u)" -ne 0 ]; then
   exit 1
 fi
 
-while getopts ":s:d:hcv" opt; do
+while getopts ":s:d:y:hcv" opt; do
   case $opt in
 	s)
 		SLOT=$OPTARG
@@ -21,6 +21,10 @@ while getopts ":s:d:hcv" opt; do
 	d)
 		DISK=$OPTARG
 		echo "setting disk to $OPTARG."
+		;;
+	y)
+		YUBIKEY_LUKS_SLOT=$OPTARG
+		echo "setting yubikey slot to $OPTARG."
 		;;
 	c)  CLEAR_SLOT=1
 		echo "clearing slot"
@@ -32,6 +36,7 @@ while getopts ":s:d:hcv" opt; do
 		echo 
 		echo " -d <partition>: set the partition"
 		echo " -s <slot>     : set the slot"
+		echo " -y <slot>     : set the yubikey slot to use"
 		echo " -c            : clear the slot prior to writing"
 		echo " -v            : show input/output in cleartext"
 		echo
@@ -43,7 +48,7 @@ while getopts ":s:d:hcv" opt; do
   esac
 done
 
-echo "This script will utilize slot $SLOT on drive $DISK.  If this is not what you intended, exit now!"
+echo "This script will utilize the YubiKey slot $YUBIKEY_LUKS_SLOT for slot $SLOT on drive $DISK.  If this is not what you intended, exit now!"
 
 if [ "$CLEAR_SLOT" = "1" ]; then
 	echo "Killing LUKS slot $SLOT"
@@ -74,7 +79,7 @@ if [ "$HASH" = "1" ]; then
 		if [ "$DBG" = "1" ]; then echo "Password hash: $P1"; fi
 fi
 
-R="$(ykchalresp -2 "$P1" 2>/dev/null || true)"
+R="$(ykchalresp -"$YUBIKEY_LUKS_SLOT" "$P1" 2>/dev/null || true)"
 	if [ "$DBG" = "1" ]; then echo "Yubikey response: $R"; fi
 
 if [ -z "$R" ]; then

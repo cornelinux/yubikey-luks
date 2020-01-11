@@ -22,8 +22,8 @@ yubikey-luks-enroll - enroll your yubikey for usage with LUKS
 .B yubikey-luks-enroll
 .RI "[ \-s 3 ] [ \-d /dev/sda6 ] [ \-c ]"
 .SH DESCRIPTION
-With this tool you can take a YubiKey with challenge-response enabled on slot 2
-to add a LUKS / cryptsetup key slot.
+With this tool you can take a YubiKey with challenge-response enabled on any
+slot to add a LUKS / cryptsetup key slot.
 
 Your chosen PIN or password, plus your YubiKey can generate a response that is
 added as a key to the cryptsetup disk.
@@ -45,6 +45,9 @@ Clear the chosen LUKS slot at first.
 .TP
 .B \-d
 The disk device to work with (default: /dev/sda3)
+.TP
+.B \-y
+The YubiKey Slot to work with (default: 2)
 
 .SH PREREQUISITES
 Before adding the Yubikey to the LUKS slot, you need to initialize

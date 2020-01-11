@@ -19,7 +19,7 @@ message()
     return 0
 }
 
-check_yubikey_present="$(ykinfo -q -2)"
+check_yubikey_present="$(ykinfo -q -"$YUBIKEY_LUKS_SLOT")"
 
 # source for log_*_msg() functions, see LP: #272301
 if [ -e /scripts/functions ] ; then
@@ -46,7 +46,7 @@ if [ "$check_yubikey_present" = "1" ]; then
 	if [ "$HASH" = "1" ]; then
         	PW=$(printf %s "$PW" | sha256sum | awk '{print $1}')
 	fi
-    	R="$(ykchalresp -2 "$PW" 2>/dev/null || true)"
+    	R="$(ykchalresp -"$YUBIKEY_LUKS_SLOT" "$PW" 2>/dev/null || true)"
 	message "Retrieved the response from the Yubikey"
 	if [ "$CONCATENATE" = "1" ]; then
 		printf '%s' "$PW$R"

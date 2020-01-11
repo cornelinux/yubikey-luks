@@ -39,7 +39,7 @@ echo mem > /sys/power/state
 		P1=$(printf %s "$P1" | sha256sum | awk '{print $1}')
 	fi
 
-	R="$(ykchalresp -2 "$P1" 2>/dev/null || true)"
+	R="$(ykchalresp -"$YUBIKEY_LUKS_SLOT" "$P1" 2>/dev/null || true)"
 
 	if [ "$CONCATENATE" = "1" ]; then
 		printf %s "$P1$R" | cryptsetup luksResume "${cryptname}" 2>&1;
