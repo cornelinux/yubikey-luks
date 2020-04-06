@@ -28,17 +28,22 @@ else
 	. /usr/share/initramfs-tools/scripts/functions
 fi
 
-if [ -z "$cryptkeyscript" ]; then
-	cryptkey="Unlocking the disk $cryptsource ($crypttarget)\\nEnter passphrase: "
-	if [ -x /bin/plymouth ] && plymouth --ping; then
-    	cryptkeyscript="plymouth ask-for-password --prompt"
-	    cryptkey=$(printf '%s' "$cryptkey")
-    else
-        cryptkeyscript="/lib/cryptsetup/askpass"
-    fi
-fi
+# Adding option to use YubiKey as 1FA -TC
 
-PW="$($cryptkeyscript "$WELCOME_TEXT")"
+if [ -z "$cryptkey" ]; then
+	if [ -z "$cryptkeyscript" ]; then
+		cryptkey="Unlocking the disk $cryptsource ($crypttarget)\\nEnter passphrase: "
+		if [ -x /bin/plymouth ] && plymouth --ping; then
+		cryptkeyscript="plymouth ask-for-password --prompt"
+		    cryptkey=$(printf '%s' "$cryptkey")
+	    else
+		cryptkeyscript="/lib/cryptsetup/askpass"
+	    fi
+	fi
+
+	PW="$($cryptkeyscript "$WELCOME_TEXT")"
+else
+	PW="$($cryptkey "$WELCOME_TEXT")"
 
 
 if [ "$check_yubikey_present" = "1" ]; then
