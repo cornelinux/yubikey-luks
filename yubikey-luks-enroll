@@ -58,16 +58,21 @@ while true ; do
     read -r _ <&1
 done
 
-P1=$(/lib/cryptsetup/askpass "Please enter the yubikey challenge password. This is the password that will only work while your yubikey is installed in your computer:")
-	if [ "$DBG" = "1" ]; then echo "Password: $P1"; fi
+if [ -z "$cryptkey" ]; then
 
-P2=$(/lib/cryptsetup/askpass "Please enter the yubikey challenge password again:")
-	if [ "$DBG" = "1" ]; then echo "Password: $P2"; fi
+	P1=$(/lib/cryptsetup/askpass "Please enter the yubikey challenge password. This is the password that will only work while your yubikey is installed in your computer:")
+		if [ "$DBG" = "1" ]; then echo "Password: $P1"; fi
 
-if [ "$P1" != "$P2" ]; then
-	echo "Passwords do not match"
-	exit 1
-fi
+	P2=$(/lib/cryptsetup/askpass "Please enter the yubikey challenge password again:")
+		if [ "$DBG" = "1" ]; then echo "Password: $P2"; fi
+
+	if [ "$P1" != "$P2" ]; then
+		echo "Passwords do not match"
+		exit 1
+	fi
+
+else
+	P1=$cryptkey
 
 if [ "$HASH" = "1" ]; then
 	P1=$(printf %s "$P1" | sha256sum | awk '{print $1}')
