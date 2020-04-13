@@ -44,7 +44,7 @@ if [ -z "$cryptkey" ]; then
 	PW="$($cryptkeyscript "$WELCOME_TEXT")"
 else
 	PW="$($cryptkey "$WELCOME_TEXT")"
-
+fi
 
 if [ "$check_yubikey_present" = "1" ]; then
 	message "Accessing yubikey..."
