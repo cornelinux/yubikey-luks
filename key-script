@@ -59,7 +59,7 @@ if [ "$check_yubikey_present" = "1" ]; then
 	        printf '%s' "$R"
 	fi
 else
-	printf '%s' "$PW"
+	exit 0
 fi
 
 exit 0
