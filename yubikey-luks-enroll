@@ -29,7 +29,7 @@ while getopts ":s:d:hcv" opt; do
 		echo "debugging enabled"
 		;;
 	h)
-		echo 
+		echo
 		echo " -d <partition>: set the partition"
 		echo " -s <slot>     : set the slot"
 		echo " -c            : clear the slot prior to writing"
@@ -73,6 +73,8 @@ if [ -z "$cryptkey" ]; then
 
 else
 	P1=$cryptkey
+
+fi
 
 if [ "$HASH" = "1" ]; then
 	P1=$(printf %s "$P1" | sha256sum | awk '{print $1}')
