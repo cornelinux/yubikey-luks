@@ -5,13 +5,15 @@
 
 . /etc/ykluks.cfg
 
-if [ -z "$WELCOME_TEXT" ]; then
+if [ -z "$WELCOME_TEXT" ]
+then
   WELCOME_TEXT="Please insert yubikey and press enter or enter a valid passphrase"
 fi
 
 message()
 {
-  if [ -x /bin/plymouth ] && plymouth --ping; then
+  if [ -x /bin/plymouth ] && plymouth --ping
+  then
     plymouth message --text="$*"
   else
     echo "$@" >&2
@@ -22,38 +24,48 @@ message()
 check_yubikey_present="$(ykinfo -q -2)"
 
 # source for log_*_msg() functions, see LP: #272301
-if [ -e /scripts/functions ] ; then
+if [ -e /scripts/functions ]
+then
 	. /scripts/functions
 else
 	. /usr/share/initramfs-tools/scripts/functions
 fi
 
 # Adding option to use YubiKey as 1FA -TC
+while [ -z "$check_yubikey_present" = "1" ]
+do
+  printf %s "$WELCOME_TEXT"
+done
 
-if [ -z "$cryptkey" ]; then
-	if [ -z "$cryptkeyscript" ]; then
+if [ -z "$cryptkey" ]
+then
+	if [ -z "$cryptkeyscript" ]
+  then
 		cryptkey="Unlocking the disk $cryptsource ($crypttarget)\\nEnter passphrase: "
-		if [ -x /bin/plymouth ] && plymouth --ping; then
-		  cryptkeyscript="plymouth ask-for-password --prompt"
-		  cryptkey=$(printf '%s' "$cryptkey")
-	  else
-		  cryptkeyscript="/lib/cryptsetup/askpass"
-	  fi
+    if [ -x /bin/plymouth ] && plymouth --ping
+    then
+      cryptkeyscript="plymouth ask-for-password --prompt"
+      cryptkey=$(printf '%s' "$cryptkey")
+    else
+      cryptkeyscript="/lib/cryptsetup/askpass"
+    fi
 	fi
-
-	PW="$($cryptkeyscript "$WELCOME_TEXT")"
+  PW="$($cryptkeyscript "$WELCOME_TEXT")"
 else
-	PW="$cryptkey"
+  PW="$cryptkey"
 fi
 
-if [ "$check_yubikey_present" = "1" ]; then
+if [ "$check_yubikey_present" = "1" ]
+then
 	message "Accessing yubikey..."
-	if [ "$HASH" = "1" ]; then
+	if [ "$HASH" = "1" ]
+  then
     PW=$(printf %s "$PW" | sha256sum | awk '{print $1}')
 	fi
   R="$(ykchalresp -2 "$PW" 2>/dev/null || true)"
   message "Retrieved the response from the Yubikey"
-	if [ "$CONCATENATE" = "1" ]; then
+	if [ "$CONCATENATE" = "1" ]
+  then
 		printf '%s' "$PW$R"
 	else
     printf '%s' "$R"
