@@ -89,11 +89,16 @@ if [ -z "$R" ]; then
     exit 1
 fi
 
-OLD=$(/lib/cryptsetup/askpass "Please provide an existing passphrase. This is NOT the passphrase you just entered, this is the passphrase that you currently use to unlock your LUKS encrypted drive:")
-	if [ "$DBG" = "1" ]; then echo "Old passphrase: $OLD"; fi
+if [ "$MASTERKEY" = "1" ]; then
+  read -p "Swap to the master YubiKey and press ENTER..." -n1 -s
+  OLD="$(ykchalresp -2 "$P1" 2>/dev/null || true)"
+else
+  OLD=$(/lib/cryptsetup/askpass "Please provide an existing passphrase. This is NOT the passphrase you just entered, this is the passphrase that you currently use to unlock your LUKS encrypted drive:")
+fi
+if [ "$DBG" = "1" ]; then echo "Old passphrase: $OLD"; fi
 
 if [ "$CONCATENATE" = "1" ]; then
-	printf '%s\n' "$OLD" "$P1$R" "$P1$R" | cryptsetup --key-slot="$SLOT" luksAddKey "$DISK" 2>&1;
+  printf '%s\n' "$OLD" "$P1$R" "$P1$R" | cryptsetup --key-slot="$SLOT" luksAddKey "$DISK" 2>&1;
 		if [ "$DBG" = "1" ]; then echo "LUKS key: $P1$R"; fi
 else
 	printf '%s\n' "$OLD" "$R" "$R" | cryptsetup --key-slot="$SLOT" luksAddKey "$DISK" 2>&1;
