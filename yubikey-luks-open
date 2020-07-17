@@ -21,7 +21,7 @@ while getopts ":d:n:hv" opt; do
 		echo "debugging enabled"
 		;;
 	h)
-		echo 
+		echo
 		echo " -d <partition>: select existing partition"
 		echo " -n <name>     : set the new container name"
 		echo " -v            : show input/output in cleartext"
@@ -42,8 +42,14 @@ while true ; do
     read -r _ <&1
 done
 
+
+if [ -z "$cryptkey" ]; then
 P1=$(/lib/cryptsetup/askpass "Enter password created with yubikey-luks-enroll:")
 	if [ "$DBG" = "1" ]; then echo "Password: $P1"; fi
+
+else
+  P1=$cryptkey
+fi
 
 if [ "$HASH" = "1" ]; then
 	P1=$(printf %s "$P1" | sha256sum | awk '{print $1}')
