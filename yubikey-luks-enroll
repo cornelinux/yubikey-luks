@@ -17,44 +17,44 @@ fi
 while getopts ":s:d:y:hcv" opt; do
     case $opt in
     s)
-       SLOT=$OPTARG
-       echo "setting slot to $OPTARG."
-       ;;
+        SLOT=$OPTARG
+        echo "setting slot to $OPTARG."
+        ;;
     d)
-       DISK=$OPTARG
-       echo "setting disk to $OPTARG."
-       ;;
+        DISK=$OPTARG
+        echo "setting disk to $OPTARG."
+        ;;
     y)
-       if [ ! "$YUBIKEY_LUKS_SLOT" = "$OPTARG" ]; then
-          echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
-          echo "WARNING: You are enrolling slot $OPTARG of your yubikey.
-          echo "During boot, slot $YUBIKEY_LUKS_SLOT is configured to be used (/etc/ykluks.cfg).
-          echo "You will therefore not be able to boot using this setup!"
-          echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
-       fi
-         YUBIKEY_LUKS_SLOT=$OPTARG
-         echo "setting yubikey slot to $OPTARG."
-         ;;
+        if [ ! "$YUBIKEY_LUKS_SLOT" = "$OPTARG" ]; then
+           echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+           echo "WARNING: You are enrolling slot $OPTARG of your yubikey.
+           echo "During boot, slot $YUBIKEY_LUKS_SLOT is configured to be used (/etc/ykluks.cfg).
+           echo "You will therefore not be able to boot using this setup!"
+           echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+        fi
+          YUBIKEY_LUKS_SLOT=$OPTARG
+          echo "setting yubikey slot to $OPTARG."
+          ;;
     c)
-       CLEAR_SLOT=1
-       echo "clearing slot"
-       ;;
-    v) DBG=1
-       echo "debugging enabled"
-       ;;
+        CLEAR_SLOT=1
+        echo "clearing slot"
+        ;;
+    v)  DBG=1
+        echo "debugging enabled"
+        ;;
     h)
-       echo
-       echo " -d <partition>: set the partition"
-       echo " -s <slot>     : set the LUKS slot"
-       echo " -y <slot>     : set the yubikey slot to use"
-       echo " -c            : clear the slot prior to writing"
-       echo " -v            : show input/output in cleartext"
-       echo
-       exit 1
-       ;;
+        echo
+        echo " -d <partition>: set the partition"
+        echo " -s <slot>     : set the LUKS slot"
+        echo " -y <slot>     : set the yubikey slot to use"
+        echo " -c            : clear the slot prior to writing"
+        echo " -v            : show input/output in cleartext"
+        echo
+        exit 1
+        ;;
     \?)
-       echo "Invalid option: -$OPTARG" >&2
-       ;;
+        echo "Invalid option: -$OPTARG" >&2
+        ;;
     esac
 done
 
