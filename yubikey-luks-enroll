@@ -8,51 +8,51 @@ set -e
 . /etc/ykluks.cfg
 
 if [ "$(id -u)" -ne 0 ]; then
-  echo "You must be root." 1>&2
-  exit 1
+    echo "You must be root." 1>&2
+    exit 1
 fi
 
 while getopts ":s:d:y:hcv" opt; do
-  case $opt in
+    case $opt in
 	s)
-		SLOT=$OPTARG
-		echo "setting slot to $OPTARG."
-		;;
+	    SLOT=$OPTARG
+	    echo "setting slot to $OPTARG."
+	    ;;
 	d)
-		DISK=$OPTARG
-		echo "setting disk to $OPTARG."
-		;;
+		 DISK=$OPTARG
+		 echo "setting disk to $OPTARG."
+		 ;;
 	y)
-		YUBIKEY_LUKS_SLOT=$OPTARG
-		echo "setting yubikey slot to $OPTARG."
-		;;
+		 YUBIKEY_LUKS_SLOT=$OPTARG
+		 echo "setting yubikey slot to $OPTARG."
+		 ;;
 	c)  CLEAR_SLOT=1
-		echo "clearing slot"
-		;;
+	    echo "clearing slot"
+	    ;;
 	v)  DBG=1
-		echo "debugging enabled"
-		;;
+	    echo "debugging enabled"
+	    ;;
 	h)
-		echo 
-		echo " -d <partition>: set the partition"
-		echo " -s <slot>     : set the slot"
-		echo " -y <slot>     : set the yubikey slot to use"
-		echo " -c            : clear the slot prior to writing"
-		echo " -v            : show input/output in cleartext"
-		echo
-		exit 1
-		;;
+		 echo
+		 echo " -d <partition>: set the partition"
+		 echo " -s <slot>     : set the slot"
+		 echo " -y <slot>     : set the yubikey slot to use"
+		 echo " -c            : clear the slot prior to writing"
+		 echo " -v            : show input/output in cleartext"
+		 echo
+		 exit 1
+		 ;;
 	\?)
-		echo "Invalid option: -$OPTARG" >&2
-		;;
-  esac
+	    echo "Invalid option: -$OPTARG" >&2
+	    ;;
+    esac
 done
 
 echo "This script will utilize the YubiKey slot $YUBIKEY_LUKS_SLOT for slot $SLOT on drive $DISK.  If this is not what you intended, exit now!"
 
 if [ "$CLEAR_SLOT" = "1" ]; then
-	echo "Killing LUKS slot $SLOT"
-	cryptsetup luksKillSlot "$DISK" "$SLOT"
+    echo "Killing LUKS slot $SLOT"
+    cryptsetup luksKillSlot "$DISK" "$SLOT"
 fi
 
 echo "Adding yubikey to initrd"
@@ -64,23 +64,23 @@ while true ; do
 done
 
 P1=$(/lib/cryptsetup/askpass "Please enter the yubikey challenge password. This is the password that will only work while your yubikey is installed in your computer:")
-	if [ "$DBG" = "1" ]; then echo "Password: $P1"; fi
+if [ "$DBG" = "1" ]; then echo "Password: $P1"; fi
 
 P2=$(/lib/cryptsetup/askpass "Please enter the yubikey challenge password again:")
-	if [ "$DBG" = "1" ]; then echo "Password: $P2"; fi
+if [ "$DBG" = "1" ]; then echo "Password: $P2"; fi
 
 if [ "$P1" != "$P2" ]; then
-	echo "Passwords do not match"
-	exit 1
+    echo "Passwords do not match"
+    exit 1
 fi
 
 if [ "$HASH" = "1" ]; then
-	P1=$(printf %s "$P1" | sha256sum | awk '{print $1}')
-		if [ "$DBG" = "1" ]; then echo "Password hash: $P1"; fi
+    P1=$(printf %s "$P1" | sha256sum | awk '{print $1}')
+    if [ "$DBG" = "1" ]; then echo "Password hash: $P1"; fi
 fi
 
 R="$(ykchalresp -"$YUBIKEY_LUKS_SLOT" "$P1" 2>/dev/null || true)"
-	if [ "$DBG" = "1" ]; then echo "Yubikey response: $R"; fi
+if [ "$DBG" = "1" ]; then echo "Yubikey response: $R"; fi
 
 if [ -z "$R" ]; then
     echo "Yubikey not available or timed out waiting for button press"
@@ -88,14 +88,14 @@ if [ -z "$R" ]; then
 fi
 
 OLD=$(/lib/cryptsetup/askpass "Please provide an existing passphrase. This is NOT the passphrase you just entered, this is the passphrase that you currently use to unlock your LUKS encrypted drive:")
-	if [ "$DBG" = "1" ]; then echo "Old passphrase: $OLD"; fi
+if [ "$DBG" = "1" ]; then echo "Old passphrase: $OLD"; fi
 
 if [ "$CONCATENATE" = "1" ]; then
-	printf '%s\n' "$OLD" "$P1$R" "$P1$R" | cryptsetup --key-slot="$SLOT" luksAddKey "$DISK" 2>&1;
-		if [ "$DBG" = "1" ]; then echo "LUKS key: $P1$R"; fi
+    printf '%s\n' "$OLD" "$P1$R" "$P1$R" | cryptsetup --key-slot="$SLOT" luksAddKey "$DISK" 2>&1;
+    if [ "$DBG" = "1" ]; then echo "LUKS key: $P1$R"; fi
 else
-	printf '%s\n' "$OLD" "$R" "$R" | cryptsetup --key-slot="$SLOT" luksAddKey "$DISK" 2>&1;
-		if [ "$DBG" = "1" ]; then echo "LUKS key: $R"; fi
+    printf '%s\n' "$OLD" "$R" "$R" | cryptsetup --key-slot="$SLOT" luksAddKey "$DISK" 2>&1;
+    if [ "$DBG" = "1" ]; then echo "LUKS key: $R"; fi
 fi
 
 exit 0

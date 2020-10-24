@@ -5,7 +5,7 @@ info:
 	@echo "ppa                   - upload to ppa launchpad. Stable"
 
 VERSION=0.5.1
-SRC_DIR = yubikey_luks.orig
+SRC_DIR = yubikey-luks-${VERSION}
 
 debianize:
 	rm -fr DEBUILD

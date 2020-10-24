@@ -7,31 +7,31 @@ set -e
 . /etc/ykluks.cfg
 
 while getopts ":d:n:hv" opt; do
-  case $opt in
+    case $opt in
 	d)
-		DISK=$OPTARG
-		echo "setting disk to $OPTARG."
-		;;
+	    DISK=$OPTARG
+	    echo "setting disk to $OPTARG."
+	    ;;
 	n)
-		NAME=$OPTARG
-		echo "setting name to $OPTARG."
-		;;
+	    NAME=$OPTARG
+	    echo "setting name to $OPTARG."
+	    ;;
 	v)
-		DBG=1
-		echo "debugging enabled"
-		;;
+	    DBG=1
+	    echo "debugging enabled"
+	    ;;
 	h)
-		echo 
-		echo " -d <partition>: select existing partition"
-		echo " -n <name>     : set the new container name"
-		echo " -v            : show input/output in cleartext"
-		echo
-		exit 1
-		;;
+	    echo
+	    echo " -d <partition>: select existing partition"
+	    echo " -n <name>     : set the new container name"
+	    echo " -v            : show input/output in cleartext"
+	    echo
+	    exit 1
+	    ;;
 	\?)
-		echo "Invalid option: -$OPTARG" >&2
-		;;
-  esac
+	    echo "Invalid option: -$OPTARG" >&2
+	    ;;
+    esac
 done
 
 echo "This script will try opening $NAME LUKS container on drive $DISK . If this is not what you intended, exit now!"
@@ -43,15 +43,15 @@ while true ; do
 done
 
 P1=$(/lib/cryptsetup/askpass "Enter password created with yubikey-luks-enroll:")
-	if [ "$DBG" = "1" ]; then echo "Password: $P1"; fi
+if [ "$DBG" = "1" ]; then echo "Password: $P1"; fi
 
 if [ "$HASH" = "1" ]; then
-	P1=$(printf %s "$P1" | sha256sum | awk '{print $1}')
-		if [ "$DBG" = "1" ]; then echo "Password hash: $P1"; fi
+    P1=$(printf %s "$P1" | sha256sum | awk '{print $1}')
+    if [ "$DBG" = "1" ]; then echo "Password hash: $P1"; fi
 fi
 
 R="$(ykchalresp -"$YUBIKEY_LUKS_SLOT" "$P1" 2>/dev/null || true)"
-	if [ "$DBG" = "1" ]; then echo "Yubikey response: $R"; fi
+if [ "$DBG" = "1" ]; then echo "Yubikey response: $R"; fi
 
 if [ -z "$R" ]; then
     echo "Yubikey not available or timed out waiting for button press"
@@ -60,29 +60,29 @@ fi
 
 _passphrase=''
 if [ "$CONCATENATE" = "1" ]; then
-	_passphrase=$(printf '%s' "$P1$R")
+    _passphrase=$(printf '%s' "$P1$R")
 else
-	_passphrase=$(printf '%s' "$R")
+    _passphrase=$(printf '%s' "$R")
 fi
-	if [ "$DBG" = "1" ]; then echo "LUKS key: ${_passphrase}"; fi
+if [ "$DBG" = "1" ]; then echo "LUKS key: ${_passphrase}"; fi
 
 if [ "$(id -u)" -eq 0 ]; then
-	printf %s "${_passphrase}" | cryptsetup luksOpen "$DISK" "$NAME" 2>&1;
+    printf %s "${_passphrase}" | cryptsetup luksOpen "$DISK" "$NAME" 2>&1;
 else
-	# c-style escapes are not available in sh, so instead of doing symply
-	# $'\n' we have to put a newline in a variable, see:
-	#   https://github.com/koalaman/shellcheck/wiki/SC2039
-	_n="$(printf '%b_' '\n')"
-	_n="${_n%_}"
+    # c-style escapes are not available in sh, so instead of doing symply
+    # $'\n' we have to put a newline in a variable, see:
+    #   https://github.com/koalaman/shellcheck/wiki/SC2039
+    _n="$(printf '%b_' '\n')"
+    _n="${_n%_}"
 
-	# reading a HEREDOC to a variable in a POSIX-compliant shell, see:
-	#   https://unix.stackexchange.com/a/340907/162158
-	# basically, the while loop reads the HEREDOC line-by-line (IFS set to
-	# newline) and concatenates everything in a variable and adds a newline.
-	expect_script=''
-	OLDIFS="$IFS"
+    # reading a HEREDOC to a variable in a POSIX-compliant shell, see:
+    #   https://unix.stackexchange.com/a/340907/162158
+    # basically, the while loop reads the HEREDOC line-by-line (IFS set to
+    # newline) and concatenates everything in a variable and adds a newline.
+    expect_script=''
+    OLDIFS="$IFS"
     while IFS="${_n}" read -r line; do
-        expect_script="$expect_script$line${_n}"
+	expect_script="$expect_script$line${_n}"
     done <<EXPECTSCRIPT
 		set timeout -1;
 		spawn udisksctl unlock -b "$DISK";
@@ -91,12 +91,12 @@ else
 		send -- "${_passphrase}\\r";
 		expect eof
 EXPECTSCRIPT
-	# get rid of all tabs and convert newlines to spaces in the expect script,
-	# otherwise it will break when it is piped to expect
-	expect_script=$(echo "$expect_script" | tr -d '\t' | tr '\n' ' ')
-	IFS="$OLDIFS"
+    # get rid of all tabs and convert newlines to spaces in the expect script,
+    # otherwise it will break when it is piped to expect
+    expect_script=$(echo "$expect_script" | tr -d '\t' | tr '\n' ' ')
+    IFS="$OLDIFS"
 
-	echo "$expect_script" | expect -f -
+    echo "$expect_script" | expect -f -
 fi
 
 exit 0
