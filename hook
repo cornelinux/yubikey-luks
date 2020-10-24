@@ -11,9 +11,9 @@ prereqs()
 
 case $1 in
     prereqs)
-	prereqs
-	exit 0
-	;;
+    prereqs
+    exit 0
+    ;;
 esac
 
 . /usr/share/initramfs-tools/hook-functions

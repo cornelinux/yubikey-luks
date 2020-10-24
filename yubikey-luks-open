@@ -2,35 +2,36 @@
 DISK="/dev/sda3"
 NAME="yubikey-luks"
 DBG=0
+YUBIKEY_LUKS_SLOT=2 #Set this in case the value is missing in /etc/ykluks.cfg
 
 set -e
 . /etc/ykluks.cfg
 
 while getopts ":d:n:hv" opt; do
     case $opt in
-	d)
-	    DISK=$OPTARG
-	    echo "setting disk to $OPTARG."
-	    ;;
-	n)
-	    NAME=$OPTARG
-	    echo "setting name to $OPTARG."
-	    ;;
-	v)
-	    DBG=1
-	    echo "debugging enabled"
-	    ;;
-	h)
-	    echo
-	    echo " -d <partition>: select existing partition"
-	    echo " -n <name>     : set the new container name"
-	    echo " -v            : show input/output in cleartext"
-	    echo
-	    exit 1
-	    ;;
-	\?)
-	    echo "Invalid option: -$OPTARG" >&2
-	    ;;
+    d)
+        DISK=$OPTARG
+        echo "setting disk to $OPTARG."
+        ;;
+    n)
+        NAME=$OPTARG
+        echo "setting name to $OPTARG."
+        ;;
+    v)
+        DBG=1
+        echo "debugging enabled"
+        ;;
+    h)
+        echo
+        echo " -d <partition>: select existing partition"
+        echo " -n <name>     : set the new container name"
+        echo " -v            : show input/output in cleartext"
+        echo
+        exit 1
+        ;;
+    \?)
+        echo "Invalid option: -$OPTARG" >&2
+        ;;
     esac
 done
 
@@ -50,7 +51,7 @@ if [ "$HASH" = "1" ]; then
     if [ "$DBG" = "1" ]; then echo "Password hash: $P1"; fi
 fi
 
-R="$(ykchalresp -2 "$P1" 2>/dev/null || true)"
+R="$(ykchalresp -"$YUBIKEY_LUKS_SLOT" "$P1" 2>/dev/null || true)"
 if [ "$DBG" = "1" ]; then echo "Yubikey response: $R"; fi
 
 if [ -z "$R" ]; then
@@ -82,14 +83,14 @@ else
     expect_script=''
     OLDIFS="$IFS"
     while IFS="${_n}" read -r line; do
-	expect_script="$expect_script$line${_n}"
+    expect_script="$expect_script$line${_n}"
     done <<EXPECTSCRIPT
-		set timeout -1;
-		spawn udisksctl unlock -b "$DISK";
-		match_max 100000;
-		expect -exact "Passphrase: ";
-		send -- "${_passphrase}\\r";
-		expect eof
+        set timeout -1;
+        spawn udisksctl unlock -b "$DISK";
+        match_max 100000;
+        expect -exact "Passphrase: ";
+        send -- "${_passphrase}\\r";
+        expect eof
 EXPECTSCRIPT
     # get rid of all tabs and convert newlines to spaces in the expect script,
     # otherwise it will break when it is piped to expect

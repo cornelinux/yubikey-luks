@@ -4,11 +4,11 @@ set -e
 
 case "$1" in
     configure)
-	if [ -x /usr/sbin/update-initramfs ]; then
-		echo
-		update-initramfs -u
-	fi
-	;;
+    if [ -x /usr/sbin/update-initramfs ]; then
+        echo
+        update-initramfs -u
+    fi
+    ;;
     abort-upgrade|abort-remove|abort-deconfigure)
 
     ;;

@@ -17,32 +17,32 @@ Initialize Yubikey
 
 Initialize the Yubikey for challenge response in slot 2
 
-	ykpersonalize -2 -ochal-resp -ochal-hmac -ohmac-lt64 -oserial-api-visible
+    ykpersonalize -2 -ochal-resp -ochal-hmac -ohmac-lt64 -oserial-api-visible
 
 Install package
 ---------------
 
 Build the package (without signing it):
 
-	make builddeb NO_SIGN=1
+    make builddeb NO_SIGN=1
 
 Install the package:
 
-	dpkg -i DEBUILD/yubikey-luks_0.*-1_all.deb
+    dpkg -i DEBUILD/yubikey-luks_0.*-1_all.deb
 
 Assign a Yubikey to an LUKS slot
 --------------------------------
 
 You can now assign the Yubikey to a slot using the tool
 
-	yubikey-luks-enroll
+    yubikey-luks-enroll
 
 Technically this is done by writing the response to your password (1st factor
 knowledge) created by the Yubikey (2nd factor possession) to a key slot.
 
 Admitted - If the attacker was able to phish this response which looks like
 this:
-	bd438575f4e8df965c80363f8aa6fe1debbe9ea9
+    bd438575f4e8df965c80363f8aa6fe1debbe9ea9
 it can be used as normal password.
 
 If you set CONCATENATE=1 option in the file /etc/ykluks.cfg then both your password and Yubikey response will be bundled together and written to key slot: passwordbd438575f4e8df965c80363f8aa6fe1debbe9ea9
@@ -67,7 +67,7 @@ Enable yubikey-luks initramfs module
 
 In order to use yubikey-luks for unlocking LUKS encrypted volume at boot you must append keyscript=/usr/share/yubikey-luks/ykluks-keyscript to the /etc/crypttab file. Example:
 
-	cryptroot /dev/sda none  luks,keyscript=/usr/share/yubikey-luks/ykluks-keyscript
+    cryptroot /dev/sda none  luks,keyscript=/usr/share/yubikey-luks/ykluks-keyscript
 
 After changing this file, you need to run
 
@@ -77,7 +77,7 @@ so that the changes get transferred to the initramfs.
 
 Alternatively you may add keyscript=/sbin/ykluks-keyscript to your boot cmdline in cryptoptions. Example:
 
-	cryptoptions=target=cryptroot,source=/dev/sda,keyscript=/sbin/ykluks-keyscript
+    cryptoptions=target=cryptroot,source=/dev/sda,keyscript=/sbin/ykluks-keyscript
 
 Enable yubikey-luks-suspend module
 ------------------------------------
