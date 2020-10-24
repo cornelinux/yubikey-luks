@@ -2,6 +2,7 @@
 #
 # This is /sbin/ykluks-keyscript, which gets called when unlocking the disk
 #
+YUBIKEY_LUKS_SLOT=2 #Set this in case the value is missing in /etc/ykluks.cfg
 
 . /etc/ykluks.cfg
 
@@ -12,14 +13,14 @@ fi
 message()
 {
     if [ -x /bin/plymouth ] && plymouth --ping; then
-	plymouth message --text="$*"
+        plymouth message --text="$*"
     else
-	echo "$@" >&2
+        echo "$@" >&2
     fi
     return 0
 }
 
-check_yubikey_present="$(ykinfo -q -2)"
+check_yubikey_present="$(ykinfo -q -"$YUBIKEY_LUKS_SLOT")"
 
 if [ -z "$cryptkeyscript" ]; then
     if [ -x /bin/plymouth ] && plymouth --ping; then
@@ -36,14 +37,14 @@ if [ "$check_yubikey_present" = "1" ]; then
     if [ "$HASH" = "1" ]; then
         PW=$(printf %s "$PW" | sha256sum | awk '{print $1}')
     fi
-    R="$(printf %s "$PW" | ykchalresp -2 -i- 2>/dev/null || true)"
+    R="$(printf %s "$PW" | ykchalresp -"$YUBIKEY_LUKS_SLOT" -i- 2>/dev/null || true)"
     if [ "$R" ]; then
         message "Retrieved the response from the Yubikey"
-		    if [ "$CONCATENATE" = "1" ]; then
-		        printf '%s' "$PW$R"
-		    else
-     	      printf '%s' "$R"
-		    fi
+        if [ "$CONCATENATE" = "1" ]; then
+            printf '%s' "$PW$R"
+        else
+            printf '%s' "$R"
+        fi
     else
         message "Failed to retrieve the response from the Yubikey"
     fi

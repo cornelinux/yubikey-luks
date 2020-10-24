@@ -3,6 +3,8 @@ SLOT=7
 DISK="/dev/sda3"
 CLEAR_SLOT=0
 DBG=0
+YUBIKEY_LUKS_SLOT=2 #Set this in case the value is missing in /etc/ykluks.cfg
+
 
 set -e
 . /etc/ykluks.cfg
@@ -12,38 +14,51 @@ if [ "$(id -u)" -ne 0 ]; then
     exit 1
 fi
 
-while getopts ":s:d:hcv" opt; do
+while getopts ":s:d:y:hcv" opt; do
     case $opt in
-	s)
-	    SLOT=$OPTARG
-	    echo "setting slot to $OPTARG."
-	    ;;
-	d)
-	    DISK=$OPTARG
-	    echo "setting disk to $OPTARG."
-	    ;;
-	c)  CLEAR_SLOT=1
-	    echo "clearing slot"
-	    ;;
-	v)  DBG=1
-	    echo "debugging enabled"
-	    ;;
-	h)
-	    echo
-	    echo " -d <partition>: set the partition"
-	    echo " -s <slot>     : set the slot"
-	    echo " -c            : clear the slot prior to writing"
-	    echo " -v            : show input/output in cleartext"
-	    echo
-	    exit 1
-	    ;;
-	\?)
-	    echo "Invalid option: -$OPTARG" >&2
-	    ;;
+    s)
+        SLOT=$OPTARG
+        echo "setting slot to $OPTARG."
+        ;;
+    d)
+        DISK=$OPTARG
+        echo "setting disk to $OPTARG."
+        ;;
+    y)
+        if [ ! "$YUBIKEY_LUKS_SLOT" = "$OPTARG" ]; then
+           echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+           echo "WARNING: You are enrolling slot $OPTARG of your yubikey.
+           echo "During boot, slot $YUBIKEY_LUKS_SLOT is configured to be used (/etc/ykluks.cfg).
+           echo "You will therefore not be able to boot using this setup!"
+           echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+        fi
+          YUBIKEY_LUKS_SLOT=$OPTARG
+          echo "setting yubikey slot to $OPTARG."
+          ;;
+    c)
+        CLEAR_SLOT=1
+        echo "clearing slot"
+        ;;
+    v)  DBG=1
+        echo "debugging enabled"
+        ;;
+    h)
+        echo
+        echo " -d <partition>: set the partition"
+        echo " -s <slot>     : set the LUKS slot"
+        echo " -y <slot>     : set the yubikey slot to use"
+        echo " -c            : clear the slot prior to writing"
+        echo " -v            : show input/output in cleartext"
+        echo
+        exit 1
+        ;;
+    \?)
+        echo "Invalid option: -$OPTARG" >&2
+        ;;
     esac
 done
 
-echo "This script will utilize slot $SLOT on drive $DISK.  If this is not what you intended, exit now!"
+echo "This script will utilize the YubiKey slot $YUBIKEY_LUKS_SLOT for slot $SLOT on drive $DISK.  If this is not what you intended, exit now!"
 
 if [ "$CLEAR_SLOT" = "1" ]; then
     echo "Killing LUKS slot $SLOT"
@@ -74,7 +89,7 @@ if [ "$HASH" = "1" ]; then
     if [ "$DBG" = "1" ]; then echo "Password hash: $P1"; fi
 fi
 
-R="$(printf %s "$P1" | ykchalresp -2 -i- 2>/dev/null || true)"
+R="$(printf %s "$PW" | ykchalresp -"$YUBIKEY_LUKS_SLOT" -i- 2>/dev/null || true)"
 if [ "$DBG" = "1" ]; then echo "Yubikey response: $R"; fi
 
 if [ -z "$R" ]; then
