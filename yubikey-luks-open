@@ -51,7 +51,7 @@ if [ "$HASH" = "1" ]; then
     if [ "$DBG" = "1" ]; then echo "Password hash: $P1"; fi
 fi
 
-R="$(ykchalresp -"$YUBIKEY_LUKS_SLOT" "$P1" 2>/dev/null || true)"
+R="$(printf %s "$P1" | ykchalresp -"$YUBIKEY_LUKS_SLOT" -i- 2>/dev/null || true)"
 if [ "$DBG" = "1" ]; then echo "Yubikey response: $R"; fi
 
 if [ -z "$R" ]; then

@@ -37,7 +37,7 @@ if [ "$check_yubikey_present" = "1" ]; then
     if [ "$HASH" = "1" ]; then
         PW=$(printf %s "$PW" | sha256sum | awk '{print $1}')
     fi
-    R="$(ykchalresp -"$YUBIKEY_LUKS_SLOT" "$PW" 2>/dev/null || true)"
+    R="$(printf %s "$PW" | ykchalresp -"$YUBIKEY_LUKS_SLOT" -i- 2>/dev/null || true)"
     if [ "$R" ]; then
         message "Retrieved the response from the Yubikey"
         if [ "$CONCATENATE" = "1" ]; then
