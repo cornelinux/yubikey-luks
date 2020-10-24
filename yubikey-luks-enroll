@@ -35,7 +35,7 @@ while getopts ":s:d:y:hcv" opt; do
 	h)
 		 echo
 		 echo " -d <partition>: set the partition"
-		 echo " -s <slot>     : set the slot"
+		 echo " -s <slot>     : set the LUKS slot"
 		 echo " -y <slot>     : set the yubikey slot to use"
 		 echo " -c            : clear the slot prior to writing"
 		 echo " -v            : show input/output in cleartext"
