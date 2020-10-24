@@ -39,8 +39,8 @@ run_dir() {
 # Remount root fs with barrier
 mount_barrier() {
     if ((REMOUNT)); then
-	mount -o remount,barrier "/dev/mapper/$CRYPTNAME"
-	REMOUNT=0
+        mount -o remount,barrier "/dev/mapper/$CRYPTNAME"
+    REMOUNT=0
     fi
 }
 
@@ -48,7 +48,7 @@ mount_barrier() {
 umount_bind() {
     local p
     for p in ${BIND_PATHS}; do
-	mountpoint -q "${INITRAMFS_DIR}${p}" && umount "${INITRAMFS_DIR}${p}"
+        mountpoint -q "${INITRAMFS_DIR}${p}" && umount "${INITRAMFS_DIR}${p}"
     done
 }
 
@@ -73,7 +73,7 @@ cryptdevice_mount_options() {
     local opt
     opt="$(cut -d ' ' -f 2 <<< "${mt}")"
     if [[ "${fs}" == "ext4" || "${fs}" == "btrfs" ]]; then
-	echo "${opt}"
+        echo "${opt}"
     fi
 }
 
