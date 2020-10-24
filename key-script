@@ -31,10 +31,10 @@ fi
 if [ -z "$cryptkeyscript" ]; then
     cryptkey="Unlocking the disk $cryptsource ($crypttarget)\\nEnter passphrase: "
     if [ -x /bin/plymouth ] && plymouth --ping; then
-	cryptkeyscript="plymouth ask-for-password --prompt"
-	cryptkey=$(printf '%s' "$cryptkey")
+        cryptkeyscript="plymouth ask-for-password --prompt"
+        cryptkey=$(printf '%s' "$cryptkey")
     else
-	cryptkeyscript="/lib/cryptsetup/askpass"
+        cryptkeyscript="/lib/cryptsetup/askpass"
     fi
 fi
 
@@ -43,17 +43,21 @@ PW="$($cryptkeyscript "$WELCOME_TEXT")"
 if [ "$check_yubikey_present" = "1" ]; then
     message "Accessing yubikey..."
     if [ "$HASH" = "1" ]; then
-	PW=$(printf %s "$PW" | sha256sum | awk '{print $1}')
+        PW=$(printf %s "$PW" | sha256sum | awk '{print $1}')
     fi
     R="$(ykchalresp -2 "$PW" 2>/dev/null || true)"
-    message "Retrieved the response from the Yubikey"
-    if [ "$CONCATENATE" = "1" ]; then
-	printf '%s' "$PW$R"
+    if [ "$R" ]; then
+        message "Retrieved the response from the Yubikey"
+		    if [ "$CONCATENATE" = "1" ]; then
+		        printf '%s' "$PW$R"
+		    else
+     	      printf '%s' "$R"
+		    fi
     else
-	printf '%s' "$R"
+        message "Failed to retrieve the response from the Yubikey"
     fi
 else
-    printf '%s' "$PW"
+        printf '%s' "$PW"
 fi
 
 exit 0
