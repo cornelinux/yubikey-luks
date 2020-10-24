@@ -2,6 +2,7 @@
 #
 # This is /sbin/ykluks-keyscript, which gets called when unlocking the disk
 #
+YUBIKEY_LUKS_SLOT=2 #Set this in case the value is missing in /etc/ykluks.cfg
 
 . /etc/ykluks.cfg
 

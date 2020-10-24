@@ -15,6 +15,7 @@
 # along with This program.  If not, see http://www.gnu.org/licenses/.
 
 cryptname="${1}"
+YUBIKEY_LUKS_SLOT=2 #Set this in case the value is missing in /etc/ykluks.cfg
 
 # Start udev from initramfs
 /lib/systemd/systemd-udevd --daemon --resolve-names=never

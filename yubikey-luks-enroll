@@ -3,6 +3,8 @@ SLOT=7
 DISK="/dev/sda3"
 CLEAR_SLOT=0
 DBG=0
+YUBIKEY_LUKS_SLOT=2 #Set this in case the value is missing in /etc/ykluks.cfg
+
 
 set -e
 . /etc/ykluks.cfg
