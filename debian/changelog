@@ -1,3 +1,13 @@
+yubikey-luks (0.6~dev1) trusty; urgency=low
+
+  * Make suspend with yubikey configurable
+  * Avoid exposing challenge
+  * Allow to choose slot 1 or 2.
+  * Check for yubikey presence  
+  * Cleanup code
+
+ -- Cornelius Kölbel <cornelius.koelbel@netknights.it>  Sun, 25 Oct 2020 09:00:00 +0200
+
 yubikey-luks (0.5.1-1) trusty; urgency=low
 
   * Avoid writing temp password to disk
@@ -20,7 +30,7 @@ yubikey-luks (0.4.1-1) trusty; urgency=low
  -- Cornelius Kölbel <cornelius.koelbel@netknights.it>  Mon, 15 Mar 2017 12:49:00 +0200
 
 yubikey-luks (0.4-1) trusty; urgency=low
- 
+
   * Fix typo in program name
   * Add man page
 
@@ -62,4 +72,3 @@ yubikey-luks (0.1-1) unstable; urgency=low
   * Initial release.
 
  -- Cornelius Kölbel <corny@cornelinux.de>  Thu, 06 Mar 2014 12:22:00 +0100
-
