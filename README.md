@@ -58,7 +58,7 @@ the file /etc/ykluks.cfg.
 
 After changing this file, you need to run
 
-  update-initramfs -u
+    update-initramfs -u
 
 so that the changes get transferred to the initramfs.
 
@@ -71,7 +71,7 @@ In order to use yubikey-luks for unlocking LUKS encrypted volume at boot you mus
 
 After changing this file, you need to run
 
-  update-initramfs -u
+    update-initramfs -u
 
 so that the changes get transferred to the initramfs.
 
@@ -84,14 +84,14 @@ Enable yubikey-luks-suspend module
 
 You can enable yubikey-luks-suspend module which allows for automatically locking encrypted LUKS containers and wiping keys from memory on suspend and unlocking them on resume by using luksSuspend, luksResume commands.
  
-        systemctl enable yubikey-luks-suspend.service
+    systemctl enable yubikey-luks-suspend.service
 
 Open LUKS container protected with yubikey-luks
 ------------------------------------
 
 You can open LUKS container protected with yubikey-luks on running system
 
-        yubikey-luks-open
+    yubikey-luks-open
 
 Manage several Yubikeys and Machines
 ------------------------------------
