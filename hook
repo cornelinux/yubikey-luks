@@ -29,11 +29,9 @@ if [ "$SUSPEND" = "1" ]; then
     echo "YKLUKS: adding yubikey authentication to suspend."
     cp -pnL /usr/lib/yubikey-luks/initramfs-suspend "${DESTDIR}/suspend"
     chmod 755 "${DESTDIR}/suspend"
-    systemctl start yubikey-luks-suspend.service
     systemctl enable yubikey-luks-suspend.service
 else
     echo "YKLUKS: removing yubikey authentication to suspend."
-    systemctl stop yubikey-luks-suspend.service
     systemctl disable yubikey-luks-suspend.service
 fi
 
