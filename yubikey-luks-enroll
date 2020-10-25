@@ -27,8 +27,8 @@ while getopts ":s:d:y:hcv" opt; do
     y)
         if [ ! "$YUBIKEY_LUKS_SLOT" = "$OPTARG" ]; then
            echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
-           echo "WARNING: You are enrolling slot $OPTARG of your yubikey.
-           echo "During boot, slot $YUBIKEY_LUKS_SLOT is configured to be used (/etc/ykluks.cfg).
+           echo "WARNING: You are enrolling slot $OPTARG of your yubikey."
+           echo "During boot, slot $YUBIKEY_LUKS_SLOT is configured to be used (/etc/ykluks.cfg)."
            echo "You will therefore not be able to boot using this setup!"
            echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
         fi
