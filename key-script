@@ -22,7 +22,7 @@ message()
 
 check_yubikey_present="$(ykinfo -q -"$YUBIKEY_LUKS_SLOT")"
 
-if [ -z "$YKFDE_CHALLENGE" ] || [ "$check_yubikey_present" -ne "1" ] ; then
+if [ -z "$YUBIKEY_CHALLENGE" ] || [ "$check_yubikey_present" -ne "1" ] ; then
   if [ -z "$cryptkeyscript" ]; then
       if [ -x /bin/plymouth ] && plymouth --ping; then
           cryptkeyscript="plymouth ask-for-password --prompt"
