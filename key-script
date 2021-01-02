@@ -32,7 +32,7 @@ if [ -z "$YUBIKEY_CHALLENGE" ] || [ "$check_yubikey_present" -ne "1" ] ; then
   fi
   PW="$($cryptkeyscript "$WELCOME_TEXT")"
 else
-  PW="$YKFDE_CHALLENGE"
+  PW="$YUBIKEY_CHALLENGE"
 fi
 
 if [ "$check_yubikey_present" = "1" ]; then
