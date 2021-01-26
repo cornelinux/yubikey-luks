@@ -65,11 +65,13 @@ so that the changes get transferred to the initramfs.
 Use 1FA to allow unattended, passwordless boot 
 ----------------------------------------------
 
-In order to bypass the password prompt and allow the system to boot when the paired Yubikey is present, you must edit /etc/ykluks.cfg to contain the challenge password that you previously enrolled. Example: 
+In order to bypass the password prompt and allow the system to boot when the paired Yubikey is present without requiring interactive input of the challenge password, then you must edit /etc/ykluks.cfg to contain the challenge password that you previously enrolled (and which should be bypassed). Example: 
 
-    YUBIKEY_CHALLENGE="password"
+    YUBIKEY_CHALLENGE="enrolled-challenge-password"
 
-Note that this will weaken security as it no longer prompts for a password and will decrypt the volume with only the Yubikey being present at boot time.
+Leave this empty, if you want to do 2FA -- i.e. being asked for the password during boot time.
+
+Note that 1FA, when using this feature, will weaken security as it no longer prompts for the chalenge password and will decrypt the volume with only the Yubikey being present at boot time.
 
 After changing this file, you need to run
 
