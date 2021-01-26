@@ -62,8 +62,26 @@ After changing this file, you need to run
 
 so that the changes get transferred to the initramfs.
 
+Use 1FA to allow unattended, passwordless boot 
+----------------------------------------------
+
+In order to bypass the password prompt and allow the system to boot when the paired Yubikey is present without requiring interactive input of the challenge password, then you must edit /etc/ykluks.cfg to contain the challenge password that you previously enrolled (and which should be bypassed). Example: 
+
+    YUBIKEY_CHALLENGE="enrolled-challenge-password"
+
+Leave this empty, if you want to do 2FA -- i.e. being asked for the password during boot time.
+
+Note that 1FA, when using this feature, will weaken security as it no longer prompts for the chalenge password and will decrypt the volume with only the Yubikey being present at boot time.
+
+After changing this file, you need to run
+
+    update-initramfs -u
+
+so that the changes get transferred to the initramfs.
+
+
 Enable yubikey-luks initramfs module
--------------------------
+------------------------------------
 
 In order to use yubikey-luks for unlocking LUKS encrypted volume at boot you must append keyscript=/usr/share/yubikey-luks/ykluks-keyscript to the /etc/crypttab file. Example:
 
@@ -80,14 +98,14 @@ Alternatively you may add keyscript=/sbin/ykluks-keyscript to your boot cmdline 
     cryptoptions=target=cryptroot,source=/dev/sda,keyscript=/sbin/ykluks-keyscript
 
 Enable yubikey-luks-suspend module
-------------------------------------
+----------------------------------
 
 You can enable yubikey-luks-suspend module which allows for automatically locking encrypted LUKS containers and wiping keys from memory on suspend and unlocking them on resume by using luksSuspend, luksResume commands.
  
     systemctl enable yubikey-luks-suspend.service
 
 Open LUKS container protected with yubikey-luks
-------------------------------------
+-----------------------------------------------
 
 You can open LUKS container protected with yubikey-luks on running system
 
