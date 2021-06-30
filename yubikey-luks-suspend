@@ -88,22 +88,22 @@ mount -t ramfs ramfs /run/initramfs
 
 INITRAMFS="/boot/initrd.img-$(uname -r)"
 [ -e "${INITRAMFS}" ] || exec /lib/systemd/systemd-sleep suspend
-cd "${INITRAMFS_DIR}"
-(cpio --quiet -id; zcat | cpio --quiet -id) < "${INITRAMFS}"
+
+unmkinitramfs "${INITRAMFS}" "${INITRAMFS_DIR}"
 chown -R root:root "${INITRAMFS_DIR}"
 chmod -R go-w "${INITRAMFS_DIR}"
 
 # In case we're still missing the suspend script.
 # (Perhaps the user didn't regenerate initramfs, or we picked the wrong file?)
-[ -e "${INITRAMFS_DIR}/suspend" ] || exec /lib/systemd/systemd-sleep suspend
+[ -e "${INITRAMFS_DIR}/main/suspend" ] || exec /lib/systemd/systemd-sleep suspend
 
 # Prepare chroot
 # For some reason, $BIND_PATHS aren't in ${INITRAMFS_DIR}
 # No worries, we'll just create them if they don't exist
 BIND_MOUNTED=1
 for p in ${BIND_PATHS}; do
-    [ -d "${INITRAMFS_DIR}${p}" ] || mkdir "${INITRAMFS_DIR}${p}"
-    mount -o bind "${p}" "${INITRAMFS_DIR}${p}"
+    [ -d "${INITRAMFS_DIR}/main${p}" ] || mkdir "${INITRAMFS_DIR}/main${p}"
+    mount -o bind "${p}" "${INITRAMFS_DIR}/main${p}"
 done
 
 # Run pre-suspend scripts
@@ -136,7 +136,7 @@ fi
 sync
 
 # Hand over execution to script inside initramfs
-cd "${INITRAMFS_DIR}"
+cd "${INITRAMFS_DIR}/main"
 chroot . /suspend "$CRYPTNAME"
 
 # Restore original mount options if necessary
