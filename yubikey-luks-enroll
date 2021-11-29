@@ -58,6 +58,11 @@ while getopts ":s:d:y:hcv" opt; do
     esac
 done
 
+if ! cryptsetup isLuks "$DISK"; then
+    echo "Device is not a valid LUKS partition, bailing." >&2
+    exit 1
+fi
+
 echo "This script will utilize the YubiKey slot $YUBIKEY_LUKS_SLOT for slot $SLOT on drive $DISK.  If this is not what you intended, exit now!"
 
 if [ "$CLEAR_SLOT" = "1" ]; then
