@@ -14,7 +14,7 @@ while getopts ":d:s:hv" opt; do
         echo "setting disk to $OPTARG."
         ;;
     s)
-        KEYSLOT=$OPTARG
+        SLOT=$OPTARG
         echo "setting keyslot to $OPTARG."
         ;;
     v)
@@ -68,7 +68,7 @@ fi
 if [ "$DBG" = "1" ]; then echo "LUKS key: ${_passphrase}"; fi
 
 if [ "$(id -u)" -eq 0 ]; then
-    printf %s "${_passphrase}" | cryptsetup luksKillSlot "$DISK" "$KEYSLOT" 2>&1;
+    printf %s "${_passphrase}" | cryptsetup luksKillSlot "$DISK" "$SLOT" 2>&1;
 else
     echo "\n[Error] This script must be run as root\n"
 fi
