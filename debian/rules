@@ -25,3 +25,4 @@ override_dh_install:
 	install -D -o root -g root -m644 yubikey-luks-suspend.service debian/yubikey-luks/lib/systemd/system/yubikey-luks-suspend.service
 	install -D -o root -g root -m755 yubikey-luks-remove debian/yubikey-luks/usr/bin/yubikey-luks-remove
 	install -D -o root -g root -m755 yubikey-luks-add debian/yubikey-luks/usr/bin/yubikey-luks-add
+	install -D -o root -g root -m755 yubikey-luks-add-password debian/yubikey-luks/usr/bin/yubikey-luks-add-password
