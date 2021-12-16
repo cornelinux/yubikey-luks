@@ -110,28 +110,9 @@ Open LUKS container protected with yubikey-luks
 You can open LUKS container protected with yubikey-luks on running system
 
     yubikey-luks-open
-
-    
-Assign a Yubikey to a LUKS slot using a yubikey protected passphrase
------------------------------------------------
-
-If all of your keyslots are protected by Yubikeys, you can enroll a new Yubikey using your old Yubikey as the existing passphrase
-
-    yubikey-luks-add -d <device> -s <keyslot>
-
-This script will prompt you for your new passphrase to use with your new Yubikey.
-You will then switch the new Yubikey with the old and enter the old passphrase
-
-
-Assign a passphrase to a LUKS slot using a yubikey protected passphrase
------------------------------------------------
-
-You can add a passhphrase protected keyslot using a Yubikey as the existing passphrase
-
-    yubikey-luks-add-password -d <device> -s <keyslot>
     
     
-Remove Yubikey or passphrase keyslot using a yubikey protected passphrase
+Remove keyslot using a yubikey protected passphrase
 -----------------------------------------------
 
 You can remove any keyslot using a Yubikey as the existing passphrase
