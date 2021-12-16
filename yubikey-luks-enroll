@@ -73,10 +73,10 @@ while true ; do
     read -r _ <&1
 done
 
-P1=$(/lib/cryptsetup/askpass "Please enter the yubikey challenge password. This is the password that will only work while your yubikey is installed in your computer:")
+P1=$(/lib/cryptsetup/askpass "Please enter the passphrase or the yubikey challenge password. This is the password that will only work while your yubikey is installed in your computer:")
 if [ "$DBG" = "1" ]; then echo "Password: $P1"; fi
 
-P2=$(/lib/cryptsetup/askpass "Please enter the yubikey challenge password again:")
+P2=$(/lib/cryptsetup/askpass "Please enter the passphrase or the yubikey challenge password again:")
 if [ "$DBG" = "1" ]; then echo "Password: $P2"; fi
 
 if [ "$P1" != "$P2" ]; then
@@ -84,28 +84,71 @@ if [ "$P1" != "$P2" ]; then
     exit 1
 fi
 
-if [ "$HASH" = "1" ]; then
-    P1=$(printf %s "$P1" | sha256sum | awk '{print $1}')
-    if [ "$DBG" = "1" ]; then echo "Password hash: $P1"; fi
-fi
+read -p "\nAre you using a Yubikey with this passphrase? [Y/n]  " USE_YUBIKEY1
 
-R="$(printf %s "$P1" | ykchalresp -"$YUBIKEY_LUKS_SLOT" -i- 2>/dev/null || true)"
-if [ "$DBG" = "1" ]; then echo "Yubikey response: $R"; fi
+if [ "$USE_YUBIKEY1" = "y" ] || [ "$USE_YUBIKEY1" = "Y" ]; then
 
-if [ -z "$R" ]; then
-    echo "Yubikey not available or timed out waiting for button press"
-    exit 1
+    if [ "$HASH" = "1" ]; then
+        P1=$(printf %s "$P1" | sha256sum | awk '{print $1}')
+        if [ "$DBG" = "1" ]; then echo "Password hash: $P1"; fi
+    fi
+
+    R1="$(printf %s "$P1" | ykchalresp -"$YUBIKEY_LUKS_SLOT" -i- 2>/dev/null || true)"
+    if [ "$DBG" = "1" ]; then echo "Yubikey response: $R1"; fi
+
+    if [ -z "$R1" ]; then
+        echo "Yubikey not available or timed out waiting for button press"
+        exit 1
+    fi
 fi
 
 OLD=$(/lib/cryptsetup/askpass "Please provide an existing passphrase. This is NOT the passphrase you just entered, this is the passphrase that you currently use to unlock your LUKS encrypted drive:")
-if [ "$DBG" = "1" ]; then echo "Old passphrase: $OLD"; fi
 
-if [ "$CONCATENATE" = "1" ]; then
-    printf '%s\n' "$OLD" "$P1$R" "$P1$R" | cryptsetup --key-slot="$SLOT" luksAddKey "$DISK" 2>&1;
-    if [ "$DBG" = "1" ]; then echo "LUKS key: $P1$R"; fi
+
+read -p "\nAre you using a Yubikey with this passphrase? [Y/n]  " USE_YUBIKEY2
+
+if [ "$USE_YUBIKEY2" = "y" ] || [ "$USE_YUBIKEY2" = "Y" ]; then
+    
+    while true ; do
+        if lsusb | grep -iq 'yubico'; then break; fi
+        printf "Please insert a yubikey and press enter."
+        read -r _ <&1
+    done
+
+    if [ "$HASH" = "1" ]; then
+        OLD=$(printf %s "$OLD" | sha256sum | awk '{print $1}')
+        if [ "$DBG" = "1" ]; then echo "Password hash: $OLD"; fi
+    fi
+
+    R2="$(printf %s "$OLD" | ykchalresp -"$YUBIKEY_LUKS_SLOT" -i- 2>/dev/null || true)"
+    if [ "$DBG" = "1" ]; then echo "Yubikey response: $R2"; fi
+
+    if [ -z "$R2" ]; then
+        echo "Yubikey not available or timed out waiting for button press"
+        exit 1
+        
+    if [ "$CONCATENATE" = "1" ]; then
+        printf '%s\n' "$OLD$R2" "$P1$R1" "$P1$R1" | cryptsetup --key-slot="$SLOT" luksAddKey "$DISK" 2>&1;
+        if [ "$DBG" = "1" ]; then echo "LUKS key: $P1$R1"; fi
+    else
+        printf '%s\n' "$R2" "$R1" "$R1" | cryptsetup --key-slot="$SLOT" luksAddKey "$DISK" 2>&1;
+        if [ "$DBG" = "1" ]; then echo "LUKS key: $R1"; fi
+    fi
+    
 else
-    printf '%s\n' "$OLD" "$R" "$R" | cryptsetup --key-slot="$SLOT" luksAddKey "$DISK" 2>&1;
-    if [ "$DBG" = "1" ]; then echo "LUKS key: $R"; fi
+    if [ "$DBG" = "1" ]; then echo "Old passphrase: $OLD"; fi
+    
+    if [ "$CONCATENATE" = "1" ]; then
+        printf '%s\n' "$OLD" "$P1$R1" "$P1$R1" | cryptsetup --key-slot="$SLOT" luksAddKey "$DISK" 2>&1;
+        if [ "$DBG" = "1" ]; then echo "LUKS key: $P1$R1"; fi
+    else
+        printf '%s\n' "$OLD" "$R1" "$R1" | cryptsetup --key-slot="$SLOT" luksAddKey "$DISK" 2>&1;
+        if [ "$DBG" = "1" ]; then echo "LUKS key: $R1"; fi
+    fi
 fi
+
+
+
+
 
 exit 0
