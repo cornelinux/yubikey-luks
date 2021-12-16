@@ -62,7 +62,7 @@ echo "This script will utilize the YubiKey slot $YUBIKEY_LUKS_SLOT for slot $SLO
 
 if [ "$CLEAR_SLOT" = "1" ]; then
     echo "Killing LUKS slot $SLOT"
-    cryptsetup luksKillSlot "$DISK" "$SLOT"
+    yubikey-luks-remove luksKillSlot "$DISK" "$SLOT"
 fi
 
 echo "Adding yubikey to initrd"

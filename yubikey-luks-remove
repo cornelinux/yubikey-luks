@@ -37,34 +37,47 @@ done
 
 echo "This script will try removing keyslot $SLOT from $NAME LUKS container on drive $DISK . If this is not what you intended, exit now!"
 
-while true ; do
-    if lsusb | grep -iq 'yubico'; then break; fi
-    printf "Please insert a yubikey and press enter."
-    read -r _ <&1
-done
 
-P1=$(/lib/cryptsetup/askpass "Enter password created with yubikey-luks-enroll:")
-if [ "$DBG" = "1" ]; then echo "Password: $P1"; fi
+P1=$(/lib/cryptsetup/askpass "Enter passphrase:")
 
-if [ "$HASH" = "1" ]; then
-    P1=$(printf %s "$P1" | sha256sum | awk '{print $1}')
-    if [ "$DBG" = "1" ]; then echo "Password hash: $P1"; fi
-fi
+read -p "\nAre you using a Yubikey with this passphrase? [Y/n]  " USE_YUBIKEY
 
-R="$(printf %s "$P1" | ykchalresp -"$YUBIKEY_LUKS_SLOT" -i- 2>/dev/null || true)"
-if [ "$DBG" = "1" ]; then echo "Yubikey response: $R"; fi
+if [ "$USE_YUBIKEY" = "y" ] || [ "$USE_YUBIKEY" = "Y" ]; then
 
-if [ -z "$R" ]; then
-    echo "Yubikey not available or timed out waiting for button press"
-    exit 1
-fi
+    while true ; do
+        if lsusb | grep -iq 'yubico'; then break; fi
+        printf "Please insert a yubikey and press enter."
+        read -r _ <&1
+    done
 
-_passphrase=''
-if [ "$CONCATENATE" = "1" ]; then
-    _passphrase=$(printf '%s' "$P1$R")
+
+    if [ "$DBG" = "1" ]; then echo "Password: $P1"; fi
+
+    if [ "$HASH" = "1" ]; then
+        P1=$(printf %s "$P1" | sha256sum | awk '{print $1}')
+        if [ "$DBG" = "1" ]; then echo "Password hash: $P1"; fi
+    fi
+
+    R="$(printf %s "$P1" | ykchalresp -"$YUBIKEY_LUKS_SLOT" -i- 2>/dev/null || true)"
+    if [ "$DBG" = "1" ]; then echo "Yubikey response: $R"; fi
+
+    if [ -z "$R" ]; then
+        echo "Yubikey not available or timed out waiting for button press"
+        exit 1
+    fi
+
+    _passphrase=''
+    if [ "$CONCATENATE" = "1" ]; then
+        _passphrase=$(printf '%s' "$P1$R")
+    else
+        _passphrase=$(printf '%s' "$R")
+    fi
+    
 else
-    _passphrase=$(printf '%s' "$R")
+    _passphrase=$P1
 fi
+
+
 if [ "$DBG" = "1" ]; then echo "LUKS key: ${_passphrase}"; fi
 
 if [ "$(id -u)" -eq 0 ]; then
