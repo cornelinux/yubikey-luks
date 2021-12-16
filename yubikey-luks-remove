@@ -40,7 +40,7 @@ echo "This script will try removing keyslot $SLOT from $NAME LUKS container on d
 
 P1=$(/lib/cryptsetup/askpass "Enter passphrase:")
 
-read -p "\nAre you using a Yubikey with this passphrase? [Y/n]  " USE_YUBIKEY
+read -p "Are you using a Yubikey with this passphrase? [Y/n]  " USE_YUBIKEY
 
 if [ "$USE_YUBIKEY" = "y" ] || [ "$USE_YUBIKEY" = "Y" ]; then
 
@@ -83,7 +83,7 @@ if [ "$DBG" = "1" ]; then echo "LUKS key: ${_passphrase}"; fi
 if [ "$(id -u)" -eq 0 ]; then
     printf %s "${_passphrase}" | cryptsetup luksKillSlot "$DISK" "$SLOT" 2>&1;
 else
-    echo "\n[Error] This script must be run as root\n"
+    echo "[Error] This script must be run as root"
 fi
 
 exit 0
