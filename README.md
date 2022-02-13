@@ -50,6 +50,7 @@ If you set CONCATENATE=1 option in the file /etc/ykluks.cfg then both your passw
 If you set HASH=1 option in the file /etc/ykluks.cfg then your password will be hashed with sha256 algorithm before using as challenge for yubikey: printf password | sha256sum | awk '{print $1}'
 5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8
 
+
 Changing the welcome text
 -------------------------
 
@@ -62,8 +63,8 @@ After changing this file, you need to run
 
 so that the changes get transferred to the initramfs.
 
-Use 1FA to allow unattended, passwordless boot 
-----------------------------------------------
+Use "weak" 1FA to allow unattended, passwordless boot on any hardware
+---------------------------------------------------------------------
 
 In order to bypass the password prompt and allow the system to boot when the paired Yubikey is present without requiring interactive input of the challenge password, then you must edit /etc/ykluks.cfg to contain the challenge password that you previously enrolled (and which should be bypassed). Example: 
 
@@ -79,6 +80,24 @@ After changing this file, you need to run
 
 so that the changes get transferred to the initramfs.
 
+Use "more-secure" 1FA to allow passwordless boot only on certain hardware
+-------------------------------------------------------------------------
+
+In order to bypass the password prompt and allow the system to boot when the paired Yubikey is present without requiring interactive input of the challenge password, the challenge password is calculated based on a hash of the output of a command which returns hardware info and serial numbers (`dmidecode -t system`). To enable, uncomment this line in /etc/ykluks.cfg
+
+    YUBIKEY_CHALLENGE_HARDWARE_HASH=1
+
+The challenge password is calculated based off the hash of the dmidecode output like this:
+
+    dmidecode -t system | sha256sum | awk '{print $1}')
+
+Notes: 
+ - To make this work with multiple machines, run `yubikey-luks-enroll -s <LUKS slot>` with a different LUKS slot for each machine (default is 7). 
+ - An added degree of security is optained as an attacker will need access to all of: 
+   - Your bootable medium (eg your SSD)
+   - Computer that you use (for the `dmidecode` output)
+   - Yubikey in order to decrypt the LUKS encrypted partition
+ - The `YUBIKEY_CHALLENGE` setting has no effect if `YUBIKEY_CHALLENGE_HARDWARE_HASH=1` uncommented
 
 Enable yubikey-luks initramfs module
 ------------------------------------

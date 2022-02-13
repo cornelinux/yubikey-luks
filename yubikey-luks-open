@@ -43,8 +43,13 @@ while true ; do
     read -r _ <&1
 done
 
-P1=$(/lib/cryptsetup/askpass "Enter password created with yubikey-luks-enroll:")
-if [ "$DBG" = "1" ]; then echo "Password: $P1"; fi
+if [ "$YUBIKEY_CHALLENGE_HARDWARE_HASH" = "1" ]; then
+    P1="$(dmidecode -t system | sha256sum | awk '{print $1}')"
+    if [ "$DBG" = "1" ]; then echo "Using Password: $P1"; fi
+else
+    P1=$(/lib/cryptsetup/askpass "Enter password created with yubikey-luks-enroll:")
+    if [ "$DBG" = "1" ]; then echo "Password: $P1"; fi
+fi
 
 if [ "$HASH" = "1" ]; then
     P1=$(printf %s "$P1" | sha256sum | awk '{print $1}')

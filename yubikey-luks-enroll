@@ -73,15 +73,21 @@ while true ; do
     read -r _ <&1
 done
 
-P1=$(/lib/cryptsetup/askpass "Please enter the yubikey challenge password. This is the password that will only work while your yubikey is installed in your computer:")
-if [ "$DBG" = "1" ]; then echo "Password: $P1"; fi
+if [ "$YUBIKEY_CHALLENGE_HARDWARE_HASH" = "1" ]; then
+    if ! command -v dmidecode > /dev/null; then echo "dmidecode could not be found, please install it"; exit 1; fi
+    P1="$(dmidecode -t system | sha256sum | awk '{print $1}')"
+    if [ "$DBG" = "1" ]; then echo "Using Password: $P1"; fi
+else
+    P1=$(/lib/cryptsetup/askpass "Please enter the yubikey challenge password. This is the password that will only work while your yubikey is installed in your computer:")
+    if [ "$DBG" = "1" ]; then echo "Password: $P1"; fi
 
-P2=$(/lib/cryptsetup/askpass "Please enter the yubikey challenge password again:")
-if [ "$DBG" = "1" ]; then echo "Password: $P2"; fi
+    P2=$(/lib/cryptsetup/askpass "Please enter the yubikey challenge password again:")
+    if [ "$DBG" = "1" ]; then echo "Password: $P2"; fi
 
-if [ "$P1" != "$P2" ]; then
-    echo "Passwords do not match"
-    exit 1
+    if [ "$P1" != "$P2" ]; then
+        echo "Passwords do not match"
+        exit 1
+    fi
 fi
 
 if [ "$HASH" = "1" ]; then

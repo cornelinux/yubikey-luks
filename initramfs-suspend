@@ -34,7 +34,11 @@ echo mem > /sys/power/state
 
 [ -z "${cryptname}" ] ||
     while true; do
-        P1=$(/lib/cryptsetup/askpass "$WELCOME_TEXT")
+        if [ "$YUBIKEY_CHALLENGE_HARDWARE_HASH" == "1" ]; then
+            P1="$(dmidecode -t system | sha256sum | awk '{print $1}')"
+        else
+            P1=$(/lib/cryptsetup/askpass "$WELCOME_TEXT")
+        fi
 
         if [ "$HASH" = "1" ]; then
             P1=$(printf %s "$P1" | sha256sum | awk '{print $1}')
