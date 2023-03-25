@@ -2,10 +2,35 @@
 DISK="/dev/sda3"
 NAME="yubikey-luks"
 DBG=0
-YUBIKEY_LUKS_SLOT=2 #Set this in case the value is missing in /etc/ykluks.cfg
+YUBIKEY_LUKS_SLOT=2 #Set this in case the value is missing in ykluks.cfg
+CONFIG_FILE="/etc/ykluks.cfg"
+FIDO2_RELYING_PARTY="yubikey-luks.cornelinux.github.com"
+FIDO2_USERNAME="ykluks"
+FIDO2_CREDENTIAL_ID=
+FIDO2_CREDENTIAL_PUBKEY=
 
 set -e
-. /etc/ykluks.cfg
+. $CONFIG_FILE
+
+sha256_base64() {
+    # Computes SHA256 over the given argument, converts the hash to a binary blob, and returns the
+    # base64 encoding of said blob.
+    /usr/bin/printf $(printf '%s' "$1" | sha256sum | awk '{print $1}' | sed -e 's/\([0-9a-f]\{2\}\)/\\x\1/g') | base64 -w0
+}
+
+fido2_salt_from_blkid() {
+    sha256_base64 "$(blkid -o value "$1" | head -1)"
+}
+
+fido2_device() {
+    fido2-token -L | sed 's/:.*//'
+}
+
+fido2_temp_keyfile() {
+    local keyfile=$(mktemp)
+    echo "$FIDO2_CREDENTIAL_PUBKEY" | base64 -d > $keyfile
+    echo $keyfile
+}
 
 while getopts ":d:n:hv" opt; do
     case $opt in
@@ -43,27 +68,46 @@ while true ; do
     read -r _ <&1
 done
 
-P1=$(/lib/cryptsetup/askpass "Enter password created with yubikey-luks-enroll:")
-if [ "$DBG" = "1" ]; then echo "Password: $P1"; fi
-
-if [ "$HASH" = "1" ]; then
-    P1=$(printf %s "$P1" | sha256sum | awk '{print $1}')
-    if [ "$DBG" = "1" ]; then echo "Password hash: $P1"; fi
-fi
-
-R="$(printf %s "$P1" | ykchalresp -"$YUBIKEY_LUKS_SLOT" -i- 2>/dev/null || true)"
-if [ "$DBG" = "1" ]; then echo "Yubikey response: $R"; fi
-
-if [ -z "$R" ]; then
-    echo "Yubikey not available or timed out waiting for button press"
-    exit 1
-fi
-
 _passphrase=''
-if [ "$CONCATENATE" = "1" ]; then
-    _passphrase=$(printf '%s' "$P1$R")
+if [ "$YUBIKEY_LUKS_SLOT" = "fido2" ] ; then
+    salt=$(fido2_salt_from_blkid)
+    challenge=$(dd if=/dev/urandom bs=1 count=32 2> /dev/null | base64)
+    params="$challenge\n$FIDO2_RELYING_PARTY\n$FIDO2_CREDENTIAL_ID\n$salt"
+    if [ "$DBG" = "1" ]; then echo "Assertion parameters: \n$params\n"; fi
+
+    assertion=$(echo "$params" | fido2-assert -G -h -v $(fido2_device))
+    if [ "$DBG" = "1" ]; then echo "Assertion response: \n$assertion\n"; fi
+    if [ -z "$assertion" ] ; then
+        echo "Unable to generate shared secret."
+        exit 1
+    fi
+
+    keyfile=$(fido2_temp_keyfile)
+    echo "$assertion" | head -n4 | fido2-assert -V -h "$keyfile" || (rm -f $keyfile ; exit 1)
+    rm -f $keyfile
+    _passphrase=$(printf '%s\n' "$assertion" | tail -1)
 else
-    _passphrase=$(printf '%s' "$R")
+    P1=$(/lib/cryptsetup/askpass "Enter password created with yubikey-luks-enroll:")
+    if [ "$DBG" = "1" ]; then echo "Password: $P1"; fi
+
+    if [ "$HASH" = "1" ]; then
+        P1=$(printf %s "$P1" | sha256sum | awk '{print $1}')
+        if [ "$DBG" = "1" ]; then echo "Password hash: $P1"; fi
+    fi
+
+    R="$(printf %s "$P1" | ykchalresp -"$YUBIKEY_LUKS_SLOT" -i- 2>/dev/null || true)"
+    if [ "$DBG" = "1" ]; then echo "Yubikey response: $R"; fi
+
+    if [ -z "$R" ]; then
+        echo "Yubikey not available or timed out waiting for button press"
+        exit 1
+    fi
+
+    if [ "$CONCATENATE" = "1" ]; then
+        _passphrase=$(printf '%s' "$P1$R")
+    else
+        _passphrase=$(printf '%s' "$R")
+    fi
 fi
 if [ "$DBG" = "1" ]; then echo "LUKS key: ${_passphrase}"; fi
 
