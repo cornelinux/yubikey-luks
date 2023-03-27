@@ -3,29 +3,12 @@ SLOT=7
 DISK="/dev/sda3"
 CLEAR_SLOT=0
 DBG=0
-YUBIKEY_LUKS_SLOT=2 #Set this in case the value is missing in ykluks.cfg
+YUBIKEY_LUKS_SLOT=2 #Set this in case the value is missing in /etc/ykluks.cfg
 CONFIG_FILE="/etc/ykluks.cfg"
-FIDO2_RELYING_PARTY="yubikey-luks.cornelinux.github.com"
-FIDO2_USERNAME="ykluks"
-FIDO2_CREDENTIAL_ID=
-FIDO2_CREDENTIAL_PUBKEY=
 
 set -e
+. /usr/share/yubikey-luks/fido2-utils.sh
 . $CONFIG_FILE
-
-fido2_device() {
-    fido2-token -L | sed 's/:.*//'
-}
-
-sha256_base64() {
-    # Computes SHA256 over the given argument, converts the hash to a binary blob, and returns the
-    # base64 encoding of said blob.
-    /usr/bin/printf $(printf '%s' "$1" | sha256sum | awk '{print $1}' | sed -e 's/\([0-9a-f]\{2\}\)/\\x\1/g') | base64 -w0
-}
-
-fido2_salt_from_blkid() {
-    sha256_base64 "$(blkid -o value "$1" | head -1)"
-}
 
 fido2_update_config() {
     if ! grep -qE "[^\\t ]*FIDO2_$1=" $CONFIG_FILE ; then
@@ -34,12 +17,6 @@ fido2_update_config() {
         local sed_script=$(printf 's;[^\\t ]*FIDO2_%s=.*$;FIDO2_%s="%s";' $1 $1 $2)
         sed -i -e "$sed_script" $CONFIG_FILE
     fi
-}
-
-fido2_temp_keyfile() {
-    local keyfile=$(mktemp)
-    echo "$FIDO2_CREDENTIAL_PUBKEY" | base64 -d > $keyfile
-    echo $keyfile
 }
 
 fido2_create_credential() {
@@ -70,6 +47,9 @@ fido2_enroll() {
         if [ "$DBG" = "1" ]; then echo "Saving FIDO2 credential ID and public key to config."; fi
         fido2_update_config CREDENTIAL_ID "$FIDO2_CREDENTIAL_ID"
         fido2_update_config CREDENTIAL_PUBKEY "$FIDO2_CREDENTIAL_PUBKEY"
+
+        echo "New credential created."
+        echo "You will need to run update-initramfs -u once this script finishes."
     fi
 
     local salt=$(fido2_salt_from_blkid)
@@ -155,7 +135,7 @@ while true ; do
     read -r _ <&1
 done
 
-if [ "$YUBIKEY_LUKS_SLOT" = "fido2" ] ; then
+if fido2 ; then
     # Hash and concatenate don't make sense in FIDO2 mode.
     HASH=0
     CONCATENATE=0

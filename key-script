@@ -3,32 +3,9 @@
 # This is /sbin/ykluks-keyscript, which gets called when unlocking the disk
 #
 YUBIKEY_LUKS_SLOT=2 #Set this in case the value is missing in /etc/ykluks.cfg
-FIDO2_RELYING_PARTY="yubikey-luks.cornelinux.github.com"
-FIDO2_USERNAME="ykluks"
-FIDO2_CREDENTIAL_ID=
-FIDO2_CREDENTIAL_PUBKEY=
 
+. /usr/share/yubikey-luks/fido2-utils.sh
 . /etc/ykluks.cfg
-
-sha256_base64() {
-    # Computes SHA256 over the given argument, converts the hash to a binary blob, and returns the
-    # base64 encoding of said blob.
-    /usr/bin/printf $(printf '%s' "$1" | sha256sum | awk '{print $1}' | sed -e 's/\([0-9a-f]\{2\}\)/\\x\1/g') | base64 -w0
-}
-
-fido2_salt_from_blkid() {
-    sha256_base64 "$(blkid -o value "$1" | head -1)"
-}
-
-fido2_device() {
-    fido2-token -L | sed 's/:.*//'
-}
-
-fido2_temp_keyfile() {
-    local keyfile=$(mktemp)
-    echo "$FIDO2_CREDENTIAL_PUBKEY" | base64 -d > $keyfile
-    echo $keyfile
-}
 
 if [ -z "$WELCOME_TEXT" ]; then
     WELCOME_TEXT="Please insert yubikey and press enter or enter a valid passphrase"
@@ -44,42 +21,26 @@ message()
     return 0
 }
 
-if [ "$YUBIKEY_LUKS_SLOT" != "fido2" ] ; then
+if fido2 ; then
+    HASH=0
+    CONCATENATE=0
+    check_yubikey_present="$([ -z "$(fido2-token -L)" ] && echo 0 || echo 1)"
+else
     check_yubikey_present="$(ykinfo -q -"$YUBIKEY_LUKS_SLOT")"
 fi
 
-if [ -z "$YUBIKEY_CHALLENGE" ] || [ "$check_yubikey_present" != "1" ] || [ "$YUBIKEY_LUKS_SLOT" == "fido2" ] ; then
-  if [ -z "$cryptkeyscript" ]; then
-      if [ -x /bin/plymouth ] && plymouth --ping; then
-          cryptkeyscript="plymouth ask-for-password --prompt"
-      else
-          cryptkeyscript="/lib/cryptsetup/askpass"
-      fi
-  fi
-
-  if [ "$YUBIKEY_LUKS_SLOT" = "fido2" ] ; then
-    pin="$($cryptkeyscript "$WELCOME_TEXT")"
-    param_file=$(mktemp)
-    dd if=/dev/urandom bs=1 count=32 2> /dev/null | base64 > $param_file
-    echo "$FIDO2_RELYING_PARTY" >> $param_file
-    echo "$FIDO2_CREDENTIAL_ID" >> $param_file
-    fido2_salt_from_blkid >> $param_file
-
-    assertion=$(echo "$pin" | setsid fido2-assert -G -h -v -i "$param_file" $(fido2_device) 2> /dev/null)
-    rm -f $param_file
-    if [ -z "$assertion" ] ; then
-        exit 1
+if [ -z "$cryptkeyscript" ]; then
+    if [ -x /bin/plymouth ] && plymouth --ping; then
+        cryptkeyscript="plymouth ask-for-password --prompt"
+    else
+        cryptkeyscript="/lib/cryptsetup/askpass"
     fi
+fi
 
-    keyfile=$(fido2_temp_keyfile)
-    echo "$assertion" | head -n4 | fido2-assert -V -h "$keyfile" || (rm -f $keyfile ; exit 1)
-    rm -f $keyfile
-    printf '%s' "$assertion" | tail -1
-  else
+if [ -z "$YUBIKEY_CHALLENGE" ] || [ "$check_yubikey_present" != "1" ] || fido2 ; then
     PW="$($cryptkeyscript "$WELCOME_TEXT")"
-  fi
 else
-  PW="$YUBIKEY_CHALLENGE"
+    PW="$YUBIKEY_CHALLENGE"
 fi
 
 if [ "$check_yubikey_present" = "1" ]; then
@@ -87,7 +48,11 @@ if [ "$check_yubikey_present" = "1" ]; then
     if [ "$HASH" = "1" ]; then
         PW=$(printf %s "$PW" | sha256sum | awk '{print $1}')
     fi
-    R="$(printf %s "$PW" | ykchalresp -"$YUBIKEY_LUKS_SLOT" -i- 2>/dev/null || true)"
+    if fido2 ; then
+        R="$(fido2_authenticate "$PW")"
+    else
+        R="$(printf %s "$PW" | ykchalresp -"$YUBIKEY_LUKS_SLOT" -i- 2>/dev/null || true)"
+    fi
     if [ "$R" ]; then
         message "Retrieved the response from the Yubikey"
         if [ "$CONCATENATE" = "1" ]; then
@@ -99,7 +64,7 @@ if [ "$check_yubikey_present" = "1" ]; then
         message "Failed to retrieve the response from the Yubikey"
     fi
 else
-        printf '%s' "$PW"
+    printf '%s' "$PW"
 fi
 
 exit 0
