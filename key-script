@@ -1,15 +1,9 @@
 #! /bin/sh
 #
-# This is /sbin/ykluks-keyscript, which gets called when unlocking the disk
+# This is /sbin/fido2-keyscript, which gets called when unlocking the disk
 #
-YUBIKEY_LUKS_SLOT=2 #Set this in case the value is missing in /etc/ykluks.cfg
-
-. /usr/share/yubikey-luks/fido2-utils.sh
-. /etc/ykluks.cfg
-
-if [ -z "$WELCOME_TEXT" ]; then
-    WELCOME_TEXT="Please insert yubikey and press enter or enter a valid passphrase"
-fi
+. /usr/share/fido2-luks/fido2-utils.sh
+. $CONFIG_FILE
 
 message()
 {
@@ -21,14 +15,6 @@ message()
     return 0
 }
 
-if fido2 ; then
-    HASH=0
-    CONCATENATE=0
-    check_yubikey_present="$([ -z "$(fido2-token -L)" ] && echo 0 || echo 1)"
-else
-    check_yubikey_present="$(ykinfo -q -"$YUBIKEY_LUKS_SLOT")"
-fi
-
 if [ -z "$cryptkeyscript" ]; then
     if [ -x /bin/plymouth ] && plymouth --ping; then
         cryptkeyscript="plymouth ask-for-password --prompt"
@@ -37,34 +23,20 @@ if [ -z "$cryptkeyscript" ]; then
     fi
 fi
 
-if [ -z "$YUBIKEY_CHALLENGE" ] || [ "$check_yubikey_present" != "1" ] || fido2 ; then
-    PW="$($cryptkeyscript "$WELCOME_TEXT")"
-else
-    PW="$YUBIKEY_CHALLENGE"
-fi
-
-if [ "$check_yubikey_present" = "1" ]; then
-    message "Accessing yubikey..."
-    if [ "$HASH" = "1" ]; then
-        PW=$(printf %s "$PW" | sha256sum | awk '{print $1}')
-    fi
-    if fido2 ; then
-        R="$(fido2_authenticate "$PW")"
+if fido2_device > /dev/null ; then
+    PW="$($cryptkeyscript "Enter the PIN of your FIDO2 token")"
+    message "Accessing FIDO2 token..."
+    R="$(fido2_authenticate "$PW" "$ROOT_DISK")"
+    if [ -z "$R" ]; then
+        message "Failed to authenticate using FIDO2 token."
+        exit 1
     else
-        R="$(printf %s "$PW" | ykchalresp -"$YUBIKEY_LUKS_SLOT" -i- 2>/dev/null || true)"
-    fi
-    if [ "$R" ]; then
-        message "Retrieved the response from the Yubikey"
-        if [ "$CONCATENATE" = "1" ]; then
-            printf '%s' "$PW$R"
-        else
-            printf '%s' "$R"
-        fi
-    else
-        message "Failed to retrieve the response from the Yubikey"
+        message "Retrieved the response from token."
+        printf '%s' "$R"
+        exit 0
     fi
 else
+    PW="$($cryptkeyscript "Enter a valid disk passphrase, or insert FIDO2 token and press enter")"
     printf '%s' "$PW"
+    exit 0
 fi
-
-exit 0

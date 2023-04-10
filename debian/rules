@@ -6,21 +6,13 @@
 override_dh_auto_build:
 	# nothing to build
 
-override_dh_installsystemd:
-	dh_installsystemd -pyubikey-luks \
-		--no-enable --no-start --no-restart-after-upgrade --no-stop-on-upgrade \
-		yubikey-luks-suspend.service
-
 override_dh_install:
 	dh_install
-	install -D -o root -g root -m755 hook debian/yubikey-luks/usr/share/initramfs-tools/hooks/yubikey-luks
-	install -D -o root -g root -m755 key-script debian/yubikey-luks/usr/share/yubikey-luks/ykluks-keyscript
-	install -D -o root -g root -m755 fido2-utils.sh debian/yubikey-luks/usr/share/yubikey-luks/fido2-utils.sh
-	install -D -o root -g root -m755 yubikey-luks-open debian/yubikey-luks/usr/bin/yubikey-luks-open
-	install -D -o root -g root -m755 yubikey-luks-enroll debian/yubikey-luks/usr/bin/yubikey-luks-enroll
-	install -D -o root -g root -m644 yubikey-luks-enroll.1 debian/yubikey-luks/usr/man/man1/yubikey-luks-enroll.1
-	install -D -o root -g root -m644 README.md debian/yubikey-luks/usr/share/doc/yubikey-luks/README.md
-	install -D -o root -g root -m644 ykluks.cfg debian/yubikey-luks/etc/ykluks.cfg
-	install -D -o root -g root -m755 yubikey-luks-suspend debian/yubikey-luks/usr/lib/yubikey-luks/yubikey-luks-suspend
-	install -D -o root -g root -m755 initramfs-suspend debian/yubikey-luks/usr/lib/yubikey-luks/initramfs-suspend
-	install -D -o root -g root -m644 yubikey-luks-suspend.service debian/yubikey-luks/lib/systemd/system/yubikey-luks-suspend.service
+	install -D -o root -g root -m755 hook debian/fido2-luks/usr/share/initramfs-tools/hooks/fido2-luks
+	install -D -o root -g root -m755 key-script debian/fido2-luks/usr/share/fido2-luks/fido2-luks-keyscript
+	install -D -o root -g root -m755 fido2-utils.sh debian/fido2-luks/usr/share/fido2-luks/fido2-utils.sh
+	install -D -o root -g root -m755 fido2-luks-open debian/fido2-luks/usr/bin/fido2-luks-open
+	install -D -o root -g root -m755 fido2-luks-enroll debian/fido2-luks/usr/bin/fido2-luks-enroll
+	install -D -o root -g root -m644 fido2-luks-enroll.1 debian/fido2-luks/usr/man/man1/fido2-luks-enroll.1
+	install -D -o root -g root -m644 README.md debian/fido2-luks/usr/share/doc/fido2-luks/README.md
+	install -D -o root -g root -m644 fido2-luks.cfg debian/fido2-luks/etc/fido2-luks.cfg

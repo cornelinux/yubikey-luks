@@ -1,23 +1,16 @@
-Source: yubikey-luks
+Source: fido2-luks
 Section: admin
 Priority: optional
-Maintainer: Cornelius Kölbel <corny@cornelinux.de>
+Maintainer: Nyancient <foxolotl@protonmail.com>
 Build-Depends: debhelper (>= 11), dh-exec
 Standards-Version: 4.1.4
-Homepage: https://github.com/cornelinux/yubikey-luks
+Homepage: https://github.com/nyancient/fido2-luks
 
-Package: yubikey-luks
+Package: fido2-luks
 Architecture: all
-Depends: cryptsetup, initramfs-tools, yubikey-personalization (>= 1.5), udisks2, expect, ${misc:Depends}
-Description: YubiKey two factor authentication for LUKS disks
+Depends: cryptsetup, initramfs-tools, fido2-tools, udisks2, expect, ${misc:Depends}
+Description: FIDO2 two factor authentication for LUKS disks
  With this extension to the initramfs-tools, you can unlock a LUKS encrypted
- disk using your YubiKey as a second factor.
+ disk using your FIDO2 token as a strong single factor.
  .
- The challenge-response mechanism of the YubiKey is used to generate a response
- based on a PIN/password you have to enter.
- .
- Only the combination of the correct password and the matching YubiKey will
- generate a response, that is a valid passphrase of the LUKS disk. Alternatively
- you can use any other LUKS passphrase when the YubiKey is not present.
- .
- Requires Yubikey 2.2 or newer. 
+ Requires a FIDO2 token which supports the hmac-secret extension. 

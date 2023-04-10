@@ -1,6 +1,9 @@
 #!/bin/sh
-FIDO2_RELYING_PARTY="yubikey-luks.cornelinux.github.com"
-FIDO2_USERNAME="ykluks"
+DISK="/dev/nvme0n1p3"
+ROOT_DISK=$DISK
+CONFIG_FILE="/etc/fido2-luks.cfg"
+FIDO2_RELYING_PARTY="fido2-luks.nyancient.github.com"
+FIDO2_USERNAME="fido2-luks"
 FIDO2_CREDENTIAL_ID=
 FIDO2_CREDENTIAL_PUBKEY=
 
@@ -15,11 +18,12 @@ fido2_salt_from_blkid() {
 }
 
 fido2_device() {
-    fido2-token -L | sed 's/:.*//'
-}
-
-fido2() {
-    [ "$YUBIKEY_LUKS_SLOT" = "fido2" ]
+    device=$(fido2-token -L | sed 's/:.*//')
+    if [ -z "$device" ] ; then
+        return 1
+    else
+        echo "$device"
+    fi
 }
 
 fido2_temp_keyfile() {
@@ -33,7 +37,7 @@ fido2_authenticate() {
     dd if=/dev/urandom bs=1 count=32 2> /dev/null | base64 > $param_file
     echo "$FIDO2_RELYING_PARTY" >> $param_file
     echo "$FIDO2_CREDENTIAL_ID" >> $param_file
-    fido2_salt_from_blkid >> $param_file
+    fido2_salt_from_blkid $2 >> $param_file
 
     assertion=$(echo "$1" | setsid fido2-assert -G -h -v -i "$param_file" $(fido2_device) 2> /dev/null || (rm -f $param_file ; echo "Wrong PIN." 1>&2 ; exit 1))
     rm -f $param_file

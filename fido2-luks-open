@@ -1,0 +1,71 @@
+#!/bin/sh
+NAME="fido2-luks"
+DBG=0
+
+set -e
+. /usr/share/fido2-luks/fido2-utils.sh
+. $CONFIG_FILE
+
+sha256_base64() {
+    # Computes SHA256 over the given argument, converts the hash to a binary blob, and returns the
+    # base64 encoding of said blob.
+    /usr/bin/printf $(printf '%s' "$1" | sha256sum | awk '{print $1}' | sed -e 's/\([0-9a-f]\{2\}\)/\\x\1/g') | base64 -w0
+}
+
+fido2_device() {
+    fido2-token -L | sed 's/:.*//'
+}
+
+fido2_temp_keyfile() {
+    local keyfile=$(mktemp)
+    echo "$FIDO2_CREDENTIAL_PUBKEY" | base64 -d > $keyfile
+    echo $keyfile
+}
+
+while getopts ":d:n:hv" opt; do
+    case $opt in
+    d)
+        DISK=$OPTARG
+        echo "setting disk to $OPTARG."
+        ;;
+    n)
+        NAME=$OPTARG
+        echo "setting name to $OPTARG."
+        ;;
+    v)
+        DBG=1
+        echo "debugging enabled"
+        ;;
+    h)
+        echo
+        echo " -d <partition>: select existing partition"
+        echo " -n <name>     : set the new container name"
+        echo " -v            : show input/output in cleartext"
+        echo
+        exit 1
+        ;;
+    \?)
+        echo "Invalid option: -$OPTARG" >&2
+        ;;
+    esac
+done
+
+while true ; do
+    if fido2_device > /dev/null ; then break; fi
+    printf "Please insert a FIDO2 token and press enter."
+    read -r _ <&1
+done
+
+_passphrase=''
+pin=$(/lib/cryptsetup/askpass "Enter FIDO2 token PIN:")
+_passphrase=$(fido2_authenticate "$pin" "$DISK")
+if [ "$DBG" = "1" ]; then echo "LUKS key: ${_passphrase}"; fi
+
+if [ "$(id -u)" -eq 0 ]; then
+    printf %s "${_passphrase}" | cryptsetup luksOpen "$DISK" "$NAME" 2>&1;
+else
+    echo "You must be root." 1>&2
+    exit 1
+fi
+
+exit 0
