@@ -1,23 +1,20 @@
-Yubikey for LUKS
-================
+fido2-luks
+==========
 
-This package is inspired and based on https://github.com/tfheen/ykfde.
+This package is forked from https://github.com/cornelinux/yubikey-luks.
 
-This enables you to use the yubikey as 2FA for LUKS.
-The Password you enter is used as challenge for the yubikey
+This package lets you use a FIDO2 token with the hmac-secret extension
+as a strong single factor for LUKS.
 
-The keyscript allows to boot the machine with either
-the password and the Yubikey or with a normal password
-from any key slot.
+Well-known examples of such tokens include all FIDO2 models of Yubikey,
+the Google Titan key, the Nitrokey FIDO2, any SoloKey,
+and any other [Microsoft-compatible FIDO2 key](https://learn.microsoft.com/en-us/azure/active-directory/authentication/concept-fido2-hardware-vendor#current-partners).
 
-luksSuspend/luksResume integration is inspired and based on https://github.com/zhongfu/ubuntu-luks-suspend
+The keyscript lets you boot the machine with either the FIDO2 token and its PIN,
+or with a normal password from any key slot.
+For security and to avoid having to support multiple separate use cases,
+PIN entry is mandatory for decryption.
 
-Initialize Yubikey
-------------------
-
-Initialize the Yubikey for challenge response in slot 2
-
-    ykpersonalize -2 -ochal-resp -ochal-hmac -ohmac-lt64 -oserial-api-visible
 
 Install package
 ---------------
@@ -28,96 +25,71 @@ Build the package (without signing it):
 
 Install the package:
 
-    dpkg -i DEBUILD/yubikey-luks_0.*-1_all.deb
+    dpkg -i DEBUILD/fido2-luks_0.*-1_all.deb
 
-Assign a Yubikey to an LUKS slot
---------------------------------
+
+Assign a FIDO2 token to a LUKS slot
+-----------------------------------
 
 You can now assign the Yubikey to a slot using the tool
 
-    yubikey-luks-enroll
+    fido2-luks-enroll
 
-Technically this is done by writing the response to your password (1st factor
-knowledge) created by the Yubikey (2nd factor possession) to a key slot.
+This will cause a few things to happen:
+0. (If `-c` was specified) the LUKS keyslot into which to enroll your FIDO2 token is cleared.
+   By default, this is keyslot 7.
+1. If a FIDO2 credential is not already configured, a new credential is created
+   and its corresponding credential identifier and public key are stored in `/etc/fido2-luks.cfg`.
+   You will be prompted for your FIDO2 token's PIN and asked to verify your presence.
+   If a credential _is_ already configured, it will be reused for subsequent operations.
+2. The FIDO2 token computes a HMAC over the UUID of the LUKS volume for which the token is to be
+   enrolled and the secret corresponding to the FIDO2 credential created in step 1.
+   You will be prompted for your FIDO2 token's PIN and asked to verify your presence.
+3. The resulting HMAC is enrolled as a LUKS passphrase on the encrypted device.
 
-Admitted - If the attacker was able to phish this response which looks like
-this:
-    bd438575f4e8df965c80363f8aa6fe1debbe9ea9
-it can be used as normal password.
+This has a few implications:
+1. To decrypt a device using your FIDO2 token, you will need the device itself (obviously),
+   the token, the token's PIN, and the credential configured in `/etc/fido2-luks.cfg`.
+2. If either the credential or the UUID of the encrypted device changes, you will no longer
+   be able to decrypt the device using your token until you re-enroll it.
+3. If an attacker is able to intercept the HMAC secret (e.g. using an evil maid attack),
+   the secret can be used as a normal passphrase to unlock the disk.
 
-If you set CONCATENATE=1 option in the file /etc/ykluks.cfg then both your password and Yubikey response will be bundled together and written to key slot: passwordbd438575f4e8df965c80363f8aa6fe1debbe9ea9
-
-If you set HASH=1 option in the file /etc/ykluks.cfg then your password will be hashed with sha256 algorithm before using as challenge for yubikey: printf password | sha256sum | awk '{print $1}'
-5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8
-
-Changing the welcome text
--------------------------
-
-If you want to change the welcome text a.k.a. the passphrase prompt you can edit
-the file /etc/ykluks.cfg.
-
-After changing this file, you need to run
-
-    update-initramfs -u
-
-so that the changes get transferred to the initramfs.
-
-Use 1FA to allow unattended, passwordless boot 
-----------------------------------------------
-
-In order to bypass the password prompt and allow the system to boot when the paired Yubikey is present without requiring interactive input of the challenge password, then you must edit /etc/ykluks.cfg to contain the challenge password that you previously enrolled (and which should be bypassed). Example: 
-
-    YUBIKEY_CHALLENGE="enrolled-challenge-password"
-
-Leave this empty, if you want to do 2FA -- i.e. being asked for the password during boot time.
-
-Note that 1FA, when using this feature, will weaken security as it no longer prompts for the chalenge password and will decrypt the volume with only the Yubikey being present at boot time.
-
-After changing this file, you need to run
-
-    update-initramfs -u
-
-so that the changes get transferred to the initramfs.
+It is therefore recommended that you keep a separate recovery key, if you should lose either
+your token or your configuration file.
 
 
-Enable yubikey-luks initramfs module
-------------------------------------
+Configuring encrypted root
+--------------------------
 
-In order to use yubikey-luks for unlocking LUKS encrypted volume at boot you must append keyscript=/usr/share/yubikey-luks/ykluks-keyscript to the /etc/crypttab file. Example:
+In order to use your FIDO2 token to decrypt your root disk at boot time, there are still
+a few hoops to jump through:
 
-    cryptroot /dev/sda none  luks,keyscript=/usr/share/yubikey-luks/ykluks-keyscript
+1. Add `ROOT_DISK=<device>` to `/etc/fido2-luks.cfg`, where `<device>` is your encrypted
+   root device. `ROOT_DISK` defaults to `/dev/nvme0n1p3`, so if this is your root device
+   you do not need to update your configuration file.
+2. Add `keyscript=/usr/share/fido2-luks/fido2-luks-keyscript` to the options section of
+   the entry in `/etc/crypttab` that corresponds to your encrypted root device.
+3. Run `update-initramfs -u`, to make the above changes take effect during boot.
 
-After changing this file, you need to run
 
-    update-initramfs -u
+Non-root decryption
+-------------------
 
-so that the changes get transferred to the initramfs.
+Any partitions except the root partition can be unlocked at any time using
+the `fido2-luks-open` command. This also applies to image files, USB memory sticks, or
+anything else that uses LUKS for encryption.
 
-Alternatively you may add keyscript=/sbin/ykluks-keyscript to your boot cmdline in cryptoptions. Example:
+Keep in mind that you will still need the your token, its PIN, and the credential
+used to enroll the token, in order to unlock any such device;
+make sure to keep a copy of your configuration file along with any encrypted device
+intended to be decrypted on a computer other than the one used to enroll your FIDO2 token.
 
-    cryptoptions=target=cryptroot,source=/dev/sda,keyscript=/sbin/ykluks-keyscript
 
-Enable yubikey-luks-suspend module
-----------------------------------
+Using multiple FIDO2 tokens
+---------------------------
+You can configure multiple FIDO2 tokens to unlock your disk, as long as you use a different
+LUKS slot for each token.
 
-You can enable yubikey-luks-suspend module which allows for automatically locking encrypted LUKS containers and wiping keys from memory on suspend and unlocking them on resume by using luksSuspend, luksResume commands.
- 
-    systemctl enable yubikey-luks-suspend.service
-
-Open LUKS container protected with yubikey-luks
------------------------------------------------
-
-You can open LUKS container protected with yubikey-luks on running system
-
-    yubikey-luks-open
-
-Manage several Yubikeys and Machines
-------------------------------------
-
-It is possible to manage several Yubikeys and machines.
-You need to use privacyIDEA to manage the Yubikeys and
-the privacyIDEA admin client to push the Yubikey responses
-to the LUKS slots.
-
-See https://github.com/privacyidea/privacyideaadm and
-https://github.com/privacyidea/privacyidea
+Only one token may be plugged in during decryption however, as there is no reliable way of
+distinguishing one token from another.

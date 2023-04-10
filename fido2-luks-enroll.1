@@ -1,9 +1,9 @@
 .\"                                      Hey, EMACS: -*- nroff -*-
-.\" (C) Copyright 2015 Markus Frosch <lazyfrosch@debian.org>
+.\" (C) Copyright 2015-2023 Markus Frosch <lazyfrosch@debian.org>, Nyancient <foxolotl@protonmail.com>
 .\"
 .\"     Cornelius Kölbel <cornelius@privacyidea>
 .\"                      Add the prerequisites
-.TH YUBIKEY-LUKS-ENROLL 1 "2015-12-01"
+.TH FIDO2-LUKS-ENROLL 1 "2023-04-10"
 .\" Please adjust this date whenever revising the manpage.
 .\"
 .\" Some roff macros, for reference:
@@ -17,19 +17,18 @@
 .\" .sp <n>    insert n+1 empty lines
 .\" for manpage-specific macros, see man(7)
 .SH NAME
-yubikey-luks-enroll - enroll your yubikey for usage with LUKS
+fido2-luks-enroll - enroll your FIDO2 security token for use with LUKS
 .SH SYNOPSIS
-.B yubikey-luks-enroll
-.RI "[ \-s 3 ] [ \-d /dev/sda6 ] [ \-c ]"
+.B fido2-luks-enroll
+.RI "[ \-s N ] [ \-d DEVICE ] [ \-c ]"
 .SH DESCRIPTION
-With this tool you can take a YubiKey with challenge-response enabled on any
-slot to add a LUKS / cryptsetup key slot.
+With this tool you can use a FIDO2 token with hmac-secret support to add a LUKS / cryptsetup key slot.
 
-Your chosen PIN or password, plus your YubiKey can generate a response that is
+Your chosen PIN plus your FIDO2 token can generate a response that is
 added as a key to the cryptsetup disk.
 
-On the next boot you can insert your YubiKey into a USB slot, enter your
-password, to unlock the disk. Alternatively you can enter any other passphrase
+On the next boot you can insert your FIDO2 token into a USB slot and enter your
+PIN to unlock the disk. Alternatively you can enter any other passphrase
 that is valid for that disk.
 .SH OPTIONS
 The following options change the behavior of the tool.
@@ -41,26 +40,40 @@ Show summary of options.
 The LUKS slot to save the passphrase to. (default: 7)
 .TP
 .B \-c
-Clear the chosen LUKS slot at first.
+Clear the chosen LUKS slot before enrolling token.
 .TP
 .B \-d
-The disk device to work with (default: /dev/sda3)
-.TP
-.B \-y
-The YubiKey Slot to work with (default: 2)
+The disk device to work with (default: /dev/nvme0n1p3)
+.B \-v
+Print debug info,
+.B including PINs, passwords and keys in plain text.
 
-.SH PREREQUISITES
-Before adding the Yubikey to the LUKS slot, you need to initialize
-your Yubikey. You can do so using the privacyIDEA management system
-or simply by using the command line. The following command will
-create a key for challenges response in Yubikey slot 2:
-
-    ykpersonalize -2 -ochal-resp -ochal-hmac -ohmac-lt64 -oserial-api-visible   
-
-After this, you can use yubikey-luks-enroll to assign this Yubikey
-to an LUKS slot.
+.SH BOOT SETUP
+In order to decrypt your disk using your FIDO2 token at boot time, after enrolling your token
+you also need to:
+.IP \[bu]
+Append
+.B ROOT_DISK=<DISK>
+to the fido2-luks config file,
+.B /etc/fido2-luks.cfg, where
+.B <DISK>
+is your encrypted root partition. By default, this is set to 
+.B /dev/nvme0n1p3.
+.IP \[bu]
+Append
+.B keyscript=/usr/share/fido2-luks/fido2-luks-keyscript
+to the
+.B OPTIONS
+section of the
+.B /etc/crypttab
+entry corresponding to your encrypted root partition.
+.IP \[bu]
+Run
+.B update-initramfs -u
+to make the aforementioned changes take effect during boot.
 
 .SH SEE ALSO
 .BR cryptsetup (1),
-.BR ykpersonalize (1),
-.BR ykchalresp (1).
+.BR crypttab (5),
+.BR fido2-luks-open (1),
+.BR update-initramfs (1).

@@ -1,5 +1,5 @@
 DEB_FILES=debian/changelog debian/compat debian/control debian/copyright debian/fido2-luks.postinst debian/rules debian/source
-SRC_FILES=fido2-luks-enroll fido2-luks-enroll.1 fido2-luks-open fido2-luks.cfg fido2-utils.sh hook key-script Makefile README.md
+SRC_FILES=fido2-luks-enroll fido2-luks-enroll.1 fido2-luks-open fido2-luks-open.1 fido2-luks.cfg fido2-utils.sh hook key-script Makefile README.md
 
 info:
 	@echo "builddeb [NO_SIGN=1]  - build deb package for Ubuntu LTS [NO_SIGN disables signing]"

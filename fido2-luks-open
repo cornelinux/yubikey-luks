@@ -26,11 +26,9 @@ while getopts ":d:n:hv" opt; do
     case $opt in
     d)
         DISK=$OPTARG
-        echo "setting disk to $OPTARG."
         ;;
     n)
         NAME=$OPTARG
-        echo "setting name to $OPTARG."
         ;;
     v)
         DBG=1

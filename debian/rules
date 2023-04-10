@@ -12,6 +12,7 @@ override_dh_install:
 	install -D -o root -g root -m755 key-script debian/fido2-luks/usr/share/fido2-luks/fido2-luks-keyscript
 	install -D -o root -g root -m755 fido2-utils.sh debian/fido2-luks/usr/share/fido2-luks/fido2-utils.sh
 	install -D -o root -g root -m755 fido2-luks-open debian/fido2-luks/usr/bin/fido2-luks-open
+	install -D -o root -g root -m644 fido2-luks-open.1 debian/fido2-luks/usr/man/man1/fido2-luks-open.1
 	install -D -o root -g root -m755 fido2-luks-enroll debian/fido2-luks/usr/bin/fido2-luks-enroll
 	install -D -o root -g root -m644 fido2-luks-enroll.1 debian/fido2-luks/usr/man/man1/fido2-luks-enroll.1
 	install -D -o root -g root -m644 README.md debian/fido2-luks/usr/share/doc/fido2-luks/README.md
