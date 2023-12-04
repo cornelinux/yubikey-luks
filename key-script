@@ -22,7 +22,9 @@ message()
 
 check_yubikey_present="$(ykinfo -q -"$YUBIKEY_LUKS_SLOT")"
 
-if [ -z "$YUBIKEY_CHALLENGE" ] || [ "$check_yubikey_present" != "1" ] ; then
+touch /run/ykluks-fail
+TRIED="$(grep ${CRYPTTAB_SOURCE} /run/ykluks-fail | wc -l)"
+if [ -z "$YUBIKEY_CHALLENGE" ] || [ "$check_yubikey_present" != "1" ] || [ "$TRIED" -ge 3 ] ; then
   if [ -z "$cryptkeyscript" ]; then
       if [ -x /bin/plymouth ] && plymouth --ping; then
           cryptkeyscript="plymouth ask-for-password --prompt"
@@ -34,6 +36,7 @@ if [ -z "$YUBIKEY_CHALLENGE" ] || [ "$check_yubikey_present" != "1" ] ; then
 else
   PW="$YUBIKEY_CHALLENGE"
 fi
+
 
 if [ "$check_yubikey_present" = "1" ]; then
     message "Accessing yubikey..."
@@ -48,8 +51,12 @@ if [ "$check_yubikey_present" = "1" ]; then
         else
             printf '%s' "$R"
         fi
+	echo "$CRYPTTAB_SOURCE tried" >> /run/ykluks-fail
+	echo "$CRYPTTAB_SOURCE tried" >> /run/ykluks-fail
+	echo "$CRYPTTAB_SOURCE tried" >> /run/ykluks-fail
     else
         message "Failed to retrieve the response from the Yubikey"
+	echo "$CRYPTTAB_SOURCE tried" >> /run/ykluks-fail
     fi
 else
         printf '%s' "$PW"
